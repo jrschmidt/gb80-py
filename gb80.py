@@ -1,6 +1,8 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Static, Footer
 from textual.binding import Binding
+from textual.containers import Center, Middle
+from handler_80 import on_key as handle_key
 
 
 class TextDisplay(Static):
@@ -19,12 +21,18 @@ class TextDisplay(Static):
 
 class Main(App):
     CSS = """
+    Screen{
+        align: center middle;
+    }
+
     TextDisplay {
-        height: 1fr;
-        border: solid green;
-        padding: 1 2;
+        background: black;
         color: green;
         text-style: bold;
+        width: 88;  /* So our lines will be 80 characters wide */
+        height: 26;  /* So we will show 24 lines of text */
+        padding: 1 3;
+        border: solid green;
     }
     """
 
@@ -39,6 +47,9 @@ class Main(App):
 
     def on_mount(self) -> None:
         self.query_one(TextDisplay).update_lines(["WELCOME", "PRESS R TO DO SOMETHING", "PRESS Q TO QUIT"])
+
+    def on_key(self, event) -> None:
+        handle_key(self, event)
 
     def action_action_one(self) -> None:
         display = self.query_one(TextDisplay)
