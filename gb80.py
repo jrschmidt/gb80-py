@@ -2,7 +2,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import Static, Footer
 from textual.binding import Binding
 from textual.containers import Center, Middle
-from handler_80 import on_key as handle_key
+from handler_add_ch import on_key as handle_key
 
 
 class TextDisplay(Static):
@@ -16,6 +16,13 @@ class TextDisplay(Static):
 
     def append_line(self, line: str) -> None:
         self.lines.append(line)
+        self.update("\n".join(line.upper() for line in self.lines))
+
+    def append_character(self, char: str) -> None:
+        if self.lines:
+            self.lines[-1] = self.lines[-1] + char
+        else:
+            self.lines.append(char)
         self.update("\n".join(line.upper() for line in self.lines))
 
 
