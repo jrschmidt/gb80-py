@@ -2,7 +2,7 @@ from textual.app import App, ComposeResult
 from textual.widgets import Static, Footer
 from textual.binding import Binding
 from textual.containers import Center, Middle
-from handler_add_ch import on_key as handle_key
+from handler import on_key as handle_key
 
 
 class TextDisplay(Static):
@@ -44,8 +44,8 @@ class Main(App):
     """
 
     BINDINGS = [
-        Binding("q", "quit", "QUIT"),
-        Binding("r", "action_one", "ACTION ONE"),
+        Binding("ctrl+q", "quit", "QUIT"),
+        Binding("ctrl+r", "action_one", "ACTION ONE"),
     ]
 
     def compose(self) -> ComposeResult:
