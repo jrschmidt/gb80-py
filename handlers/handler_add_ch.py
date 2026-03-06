@@ -1,4 +1,10 @@
-# TEST THE append_character() METHOD
+# Test handler to test the append_character() method.
+
+# Adds each character typed to the last line.
+
+# Prints a sample line `magic_line` the first time `on_key()`
+# is called so there is something to append to.
+
 
 from textual.events import Key
 

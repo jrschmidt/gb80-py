@@ -1,3 +1,11 @@
+# Test handler to check dimensions of the terminal display.
+
+# Display should be 24 lines, 80 characters wide.
+
+# This prints 21 80-character lines, because currently the app
+    # prints 3 test lines when it initializes.
+
+
 from textual.events import Key
 
 

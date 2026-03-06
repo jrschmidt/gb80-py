@@ -1,3 +1,8 @@
+# Test handler to test the append_character() method.
+
+# Prints whichever character is entered on a new line.
+
+
 from textual.events import Key
 
 
