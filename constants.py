@@ -1,0 +1,2 @@
+MAX_LINES = 24
+MAX_COLS = 80
