@@ -2,7 +2,9 @@ from textual.app import App, ComposeResult
 from textual.widgets import Static, Footer
 from textual.binding import Binding
 from textual.containers import Center, Middle
-from constants import MAX_LINES, MAX_COLS
+
+MAX_LINES = 24
+MAX_COLS = 80
 
 
 class TextDisplay(Static):
@@ -58,9 +60,24 @@ class Main(App):
     def on_mount(self) -> None:
         self.query_one(TextDisplay).update_lines(["WELCOME", "PRESS R TO DO SOMETHING", "PRESS Q TO QUIT"])
 
+    input_line: str = ""
+
+    def on_new_line(self, line: str) -> None:
+        pass
+
     def on_key(self, event) -> None:
         display = self.query_one(TextDisplay)
-        display.append_line(f"YOU PRESSED {event.key.upper()}")
+        if event.key == "enter":
+            self.on_new_line(self.input_line)
+            self.input_line = ""
+            display.append_line("")
+        elif event.key == "backspace":
+            if self.input_line:
+                display.update_lines(display.lines[:-1] + [display.lines[-1][:-1]])
+                self.input_line = self.input_line[:-1]
+        elif event.is_printable and len(self.input_line) < MAX_COLS:
+            display.append_character(event.character)
+            self.input_line += event.character
 
     def action_action_one(self) -> None:
         display = self.query_one(TextDisplay)
