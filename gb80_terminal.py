@@ -16,7 +16,10 @@ class TextDisplay(Static):
         if len(lines) > MAX_LINES or any(len(line) > MAX_COLS for line in lines):
             raise ValueError("Lines in lines[] buffer exceeds maximum.")
         self.lines = lines
-        self.update("\n".join(line.upper() for line in self.lines))
+        rendered = [line.upper() for line in lines]
+        if rendered:
+            rendered[-1] += "[blink underline] [/]"
+        self.update("\n".join(rendered))
 
     def append_line(self, line: str) -> None:
         lines = self.lines[1:] if len(self.lines) >= MAX_LINES else self.lines
@@ -42,7 +45,7 @@ class Main(App):
         color: green;
         text-style: bold;
         width: 88;  /* So our lines will be 80 characters wide */
-        height: 26;  /* So we will show 24 lines of text */
+        height: 28;  /* So we will show 24 lines of text (24 + 2 padding + 2 border) */
         padding: 1 3;
         border: solid green;
     }
@@ -57,8 +60,11 @@ class Main(App):
         yield TextDisplay()
         yield Footer()
 
+    def on_init(self) -> None:
+        self.query_one(TextDisplay).update_lines([])
+
     def on_mount(self) -> None:
-        self.query_one(TextDisplay).update_lines(["WELCOME", "PRESS R TO DO SOMETHING", "PRESS Q TO QUIT"])
+        self.on_init()
 
     input_line: str = ""
 
