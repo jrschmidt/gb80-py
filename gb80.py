@@ -1,37 +1,9 @@
 from textual.events import Key
 from gb80_terminal import Main, TextDisplay
+from gb80_tokenizer import tokenize
 
 
-_state = {"mode": "idle"}
-
-
-# def handle_keypress(app, event: Key) -> None:
-#     if _state["mode"] == "idle":
-#         _dummy_1(app, event)
-#     elif _state["mode"] == "active":
-#         _dummy_2(app, event)
-#     else:
-#         _dummy_3(app, event)
-
-
-# def _dummy_1(app, event: Key) -> None:
-#     display = app.query_one("TextDisplay")
-#     display.append_line(f"DUMMY 1: {event.key.upper()}")
-
-
-# def _dummy_2(app, event: Key) -> None:
-#     display = app.query_one("TextDisplay")
-#     display.append_line(f"DUMMY 2: {event.key.upper()}")
-
-
-# def _dummy_3(app, event: Key) -> None:
-#     display = app.query_one("TextDisplay")
-#     display.append_line(f"DUMMY 3: {event.key.upper()}")
-
-
-# def on_key(app, event: Key) -> None:
-#     display = app.query_one("TextDisplay")
-#     display.append_line( f"YOU PRESSED {event.key.upper()}" )
+_state = {"mode": "dev"}
 
 
 def handle_init(self) -> None:
@@ -41,8 +13,10 @@ def handle_init(self) -> None:
 
 def handle_new_line(self, line: str) -> None:
     display = self.query_one(TextDisplay)
-    display.append_line("   ... RESPONDING TO THE FOLLOWING INPUT:")
-    display.append_line(line)
+    tokens = tokenize(line)
+
+    if _state["mode"] == "dev":
+        display.append_line(f"TOKEN COUNT = {len(tokens)}")
 
 
 Main.on_init = handle_init
