@@ -1,6 +1,6 @@
-from textual.events import Key
 from gb80_terminal import Main, TextDisplay
 from gb80_tokenizer import tokenize
+from gb80_parse_tokens import parse_tokens
 
 
 _state = {"mode": "dev"}
