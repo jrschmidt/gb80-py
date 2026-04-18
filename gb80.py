@@ -16,7 +16,8 @@ def handle_new_line(self, line: str) -> None:
     tokens = tokenize(line)
 
     if _state["mode"] == "dev":
-        display.append_line(f"TOKEN COUNT = {len(tokens)}")
+        for token in tokens:
+            display.append_line(token)
 
 
 Main.on_init = handle_init

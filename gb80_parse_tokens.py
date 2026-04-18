@@ -20,6 +20,10 @@
 parse_tokens = [
     "<raw_string>",
     "<error>",
+    "<undefined>",
+    "<fail>",
+    "<remainder_string>",
+    "<original_line>"
     "<command>",
     "<clear>",
     "<list>",
