@@ -23,8 +23,8 @@ parse_tokens = [
     "<undefined>",
     "<fail>",
     "<remainder_string>",
-    "<original_line>"
-    "<command>",
+    "<original_line>",
+    "<console_command>",
     "<clear>",
     "<list>",
     "<run>",

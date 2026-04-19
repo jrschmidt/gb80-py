@@ -83,7 +83,7 @@ class Main(App):
                 self.input_line = self.input_line[:-1]
         elif event.is_printable and len(self.input_line) < MAX_COLS:
             display.append_character(event.character)
-            self.input_line += event.character
+            self.input_line += event.character.upper()
 
     def action_action_one(self) -> None:
         display = self.query_one(TextDisplay)
