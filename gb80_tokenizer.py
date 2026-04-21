@@ -36,6 +36,9 @@ def _tokenize(line: str) -> list[str]:
 # consisting of the line number with nothing following.
 def _parse_program_line(line: str) -> list[str]:
 
+
+    # First, check to see that the input line matches the general format that any
+    # valid program line will have.
     tokens = []
     match_only = re.match(r'^(\d+)$', line)
     match_with_rest = re.match(r'^(\d+) (.+)$', line)
@@ -48,9 +51,20 @@ def _parse_program_line(line: str) -> list[str]:
     else:
         tokens = ["<fail>"]
 
+    # Now, traverse the individual types of program lines
+    for parser in parsers:
+        if (tokens[0] == "<fail>") or (tokens[0] == "<error>"):
+            break
+        tokens = parser(tokens)
+
     tokens.append("<original_line>")
     tokens.append(line)
     return tokens
+
+
+def _parse_remark(tokens: list[str]) -> list[str]:
+    return tokens
+
 
 
 # If an entered line does not have a line number, this method will check if it is a
