@@ -37,6 +37,7 @@ parse_tokens = [
     "<single_space>",
     "<remark>",
     "<goto>",
+    "<destination>"
     "<gosub>",
     "<gosub_return>",
     "<if>",

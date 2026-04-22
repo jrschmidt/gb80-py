@@ -38,7 +38,8 @@ def _parse_program_line(line: str) -> list[str]:
 
     # A list of subsidiary parse methods that we will cycle through looking for a match.
     _parsers = [
-        _parse_remark
+        _parse_remark,
+        _parse_goto
     ]
 
     # First, check to see that the input line matches the general format that any
@@ -97,6 +98,17 @@ def _parse_remark(tokens: list[str], remainder_string: str) -> list[str]:
         del tokens[-2:]
         tokens[0] = "<parse_complete>"
         tokens.append("<remark>")
+    return tokens
+
+
+def _parse_goto(tokens: list[str], remainder_string: str) -> list[str]:
+    match = re.match(r'^GOTO (\d+)$', remainder_string)
+    if match:
+        del tokens[-2:]
+        tokens[0] = "<parse_complete>"
+        tokens.append("<goto>")
+        tokens.append("<destination>")
+        tokens.append(match.group(1))
     return tokens
 
 
