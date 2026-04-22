@@ -46,6 +46,9 @@ def _parse_program_line(line: str) -> list[str]:
     match_only = re.match(r'^(\d+)$', line)
     match_with_rest = re.match(r'^(\d+) (.+)$', line)
 
+    # If an input line is an integer string with nothing following, that means the user
+    # wishes to remove any program line with this number. So, this is actually a console
+    # command, with the line number as a parameter.
     if match_only:
         tokens = [
             "<parse_complete>",
@@ -55,6 +58,8 @@ def _parse_program_line(line: str) -> list[str]:
             match_only.group(1)
             ]
 
+    # This condition will match anything that starts with a line number, followed with
+    # something else.
     elif match_with_rest:
         tokens = [
             "<no_match>",
@@ -69,7 +74,7 @@ def _parse_program_line(line: str) -> list[str]:
     else:
         tokens = ["<error>"]
 
-    # Now, traverse the individual types of program lines
+    # Now, cycle through the individual parsers for different types of BASIC program lines.
     for parser in _parsers:
         if (tokens[0] == "<error>") or (tokens[0] == "<parse_complete>") :
             break
@@ -88,14 +93,17 @@ def _parse_program_line(line: str) -> list[str]:
 
 
 def _parse_remark(tokens: list[str], remainder_string: str) -> list[str]:
-    tokens.append("<parse_remark_test_token>")
+    if remainder_string.startswith("REM "):
+        del tokens[-2:]
+        tokens[0] = "<parse_complete>"
+        tokens.append("<remark>")
     return tokens
 
 
 # If an entered line does not have a line number, this method will check if it is a
 # valid console command line. A line that matches a valid command will be parsed with
-# the appropriate tokens. Currently, we are not implementing parameters for any commands,
-# so any valid command will consist of just a single keyword.
+# the appropriate tokens. Currently, we are not implementing parameters any of these
+# commands, so any valid command will consist of just a single keyword.
 def _parse_console_command(line: str) -> list[str]:
 
     tokens = []
