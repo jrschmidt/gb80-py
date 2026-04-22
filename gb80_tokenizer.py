@@ -11,20 +11,20 @@ def tokenize(line: str) -> list[str]:
 # console command. A program line will start with a line number. A console command
 # will usually be one simple word like LIST or RUN.
 # 
-# "<fail>" vs "<error>":
+# "<no_match>" vs "<error>":
 # If an entered line does not match whatever a particular method is looking for, it
-# will return with a "<fail>" token, which will signal that we will look for the next
+# will return with a "<no_match>" token, which will signal that we will look for the next
 # match. If there is a fatal mistake in the input line, it will return with an "<error>"
 # token, and attempts to parse it further will stop.
 # If an input line does not successfully match any valid construct, and returns with
-# "<fail>" for all attempted matches, then it will return with an "<error>" token. An
+# "<no_match>" for all attempted matches, then it will return with an "<error>" token. An
 # "<error>" token should result in the terminal displaying a "SYNTAX ERROR" message.
 def _tokenize(line: str) -> list[str]:
 
-    tokens = _parse_program_line(line)
-    if tokens[0] == "<fail>":
-        tokens = _parse_console_command(line)
-    if tokens[0] == "<fail>":
+    tokens = _parse_console_command(line)
+    if tokens[0] == "<no_match>":
+        tokens = _parse_program_line(line)
+    if tokens[0] != "<parse_complete>":
         tokens = [ "<error>" ]
     return tokens
 
@@ -36,35 +36,60 @@ def _tokenize(line: str) -> list[str]:
 # consisting of the line number with nothing following.
 def _parse_program_line(line: str) -> list[str]:
 
+    # A list of subsidiary parse methods that we will cycle through looking for a match.
+    _parsers = [
+        _parse_remark
+    ]
 
     # First, check to see that the input line matches the general format that any
     # valid program line will have.
-    tokens = []
     match_only = re.match(r'^(\d+)$', line)
     match_with_rest = re.match(r'^(\d+) (.+)$', line)
 
     if match_only:
-        tokens = ["<program_line>", "<line_number>", match_only.group(1)]
+        tokens = [
+            "<parse_complete>",
+            "<console_command>",
+            "<delete_program_line>",
+            "<line_number>",
+            match_only.group(1)
+            ]
+
     elif match_with_rest:
-        tokens = ["<program_line>", "<line_number>", match_with_rest.group(1),
-                  "<single_space>", "<remainder_string>", match_with_rest.group(2)]
+        tokens = [
+            "<no_match>",
+            "<program_line>",
+            "<line_number>",
+            match_with_rest.group(1),
+            "<single_space>",
+            "<remainder_string>",
+            match_with_rest.group(2)
+        ]
+
     else:
-        tokens = ["<fail>"]
+        tokens = ["<error>"]
 
     # Now, traverse the individual types of program lines
-    for parser in parsers:
-        if (tokens[0] == "<fail>") or (tokens[0] == "<error>"):
+    for parser in _parsers:
+        if (tokens[0] == "<error>") or (tokens[0] == "<parse_complete>") :
             break
-        tokens = parser(tokens)
+        if tokens[5] != "<remainder_string>":
+            tokens = [ "<error>" ]
+            break
+        remainder_string = tokens[6]
+        tokens = parser(tokens, remainder_string)
+
+    if tokens[0] != "<parse_complete>" :
+        tokens = [ "<error>" ]
 
     tokens.append("<original_line>")
     tokens.append(line)
     return tokens
 
 
-def _parse_remark(tokens: list[str]) -> list[str]:
+def _parse_remark(tokens: list[str], remainder_string: str) -> list[str]:
+    tokens.append("<parse_remark_test_token>")
     return tokens
-
 
 
 # If an entered line does not have a line number, this method will check if it is a
@@ -75,14 +100,12 @@ def _parse_console_command(line: str) -> list[str]:
 
     tokens = []
     if line == "CLEAR" :
-        tokens = ["<console_command>", "<clear>"]
+        tokens = ["<parse_complete>", "<console_command>", "<clear>"]
     elif line == "LIST" :
-        tokens = ["<console_command>", "<list>"]
+        tokens = ["<parse_complete>", "<console_command>", "<list>"]
     elif line == "RUN" :
-        tokens = ["<console_command>", "<run>"]
+        tokens = ["<parse_complete>", "<console_command>", "<run>"]
     else:
-        tokens = ["<fail>"]
+        tokens = ["<no_match>"]
 
-    tokens.append("<original_line>")
-    tokens.append(line)
     return tokens

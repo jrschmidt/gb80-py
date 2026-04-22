@@ -19,15 +19,17 @@
 
 parse_tokens = [
     "<raw_string>",
+    "<parse_complete>",
+    "<no_match>",
     "<error>",
     "<undefined>",
-    "<fail>",
     "<remainder_string>",
     "<original_line>",
     "<console_command>",
     "<clear>",
     "<list>",
     "<run>",
+    "<delete_program_line>"
     "<program_line>",
     "<line_number>",
     "<string_literal>",
