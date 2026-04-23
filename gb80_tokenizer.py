@@ -43,8 +43,6 @@ def _parse_program_line(line: str) -> list[str]:
         _parse_if_then
     ]
 
-    # First, check to see that the input line matches the general format that any
-    # valid program line will have.
     match_only = re.match(r'^(\d+)$', line)
     match_with_rest = re.match(r'^(\d+) (.+)$', line)
 
@@ -56,7 +54,7 @@ def _parse_program_line(line: str) -> list[str]:
             "<parse_complete>",
             "<console_command>",
             "<delete_program_line>",
-            "<line_number>",
+            "<line_number_ref>",
             match_only.group(1)
             ]
 
@@ -89,41 +87,65 @@ def _parse_program_line(line: str) -> list[str]:
     if tokens[0] != "<parse_complete>" :
         tokens = [ "<error>" ]
 
-    tokens.append("<original_line>")
-    tokens.append(line)
+    if tokens[1] == "<program_line>":
+        tokens.append("<original_line>")
+        tokens.append(line)
+
     return tokens
 
 
+# These are the parser methods that _parse_program_line() cycles through, trying to match
+# the input line with different types of BASIC program lines. When a match is found, the
+# method returns the appropriate tokens. If no match is found for that individual program
+# line type, the list of tokens is returned unaltered so it can be passed to the next parsing
+# method. Numeric, string, or boolean expressions, as well as sequences of digits for line
+# number references, are inserted between the tokens as strings, to be parsed later by
+# additional parsing methods.
+
+
+# Parse a BASIC REM statement. Comments are called "remarks" in BASIC.
+# Example:
+# 100 REM THIS IS A REMARK
+# 110 REM
+# 120 REM THIS IS ANOTHER REMARK
+# A REM statement can consist of just a line number followed by "REM",
+# with nothing after it, in order to insert a blank line as white space.
 def _parse_remark(tokens: list[str], remainder_string: str) -> list[str]:
-    if remainder_string.startswith("REM "):
-        del tokens[-2:]
+    if (remainder_string.startswith("REM ")) or (remainder_string == "REM") :
+        del tokens[-3:]
         tokens[0] = "<parse_complete>"
         tokens.append("<remark>")
     return tokens
 
 
+# Parse a BASIC GOTO statement.
+# Example:
+# 280 GOTO 400
 def _parse_goto(tokens: list[str], remainder_string: str) -> list[str]:
     match = re.match(r'^GOTO (\d+)$', remainder_string)
     if match:
-        del tokens[-2:]
+        del tokens[-3:]
         tokens[0] = "<parse_complete>"
         tokens.append("<goto>")
-        tokens.append("<destination>")
+        tokens.append("<line_number_ref>")
         tokens.append(match.group(1))
     return tokens
 
 
+# Parse a BASIC IF/THEN statement.
+# Example:
+# 730 IF Z>A THEN 800
+# 970 IF Q$="YES" THEN 900
 def _parse_if_then(tokens: list[str], remainder_string: str) -> list[str]:
     match = re.match(r'^IF (.+) THEN (\d+)$', remainder_string)
     if match:
-        del tokens[-2:]
+        del tokens[-3:]
         tokens[0] = "<parse_complete>"
         tokens.append("<if_then>")
         tokens.append("<if>")
-        tokens.append("<single_space>")
         tokens.append("<unparsed_expression>")
         tokens.append(match.group(1))
-        tokens.append("<single_space>")
+        tokens.append("<then>")
         tokens.append("<line_number_ref>")
         tokens.append(match.group(2))
     return tokens
