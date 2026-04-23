@@ -41,6 +41,7 @@ parse_tokens = [
     "<if_then>",
     "<if>",
     "<then>",
+    "<print>",
     "<input>",
     "<semicolon>",
     "<end>",

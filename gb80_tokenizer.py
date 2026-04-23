@@ -43,6 +43,7 @@ def _parse_program_line(line: str) -> list[str]:
         _parse_if_then,
         _parse_gosub,
         _parse_return,
+        _parse_print,
         _parse_end
     ]
 
@@ -176,6 +177,21 @@ def _parse_return(tokens: list[str], remainder_string: str) -> list[str]:
         del tokens[-3:]
         tokens[0] = "<parse_complete>"
         tokens.append("<gosub_return>")
+    return tokens
+
+
+# Parse a BASIC PRINT statement.
+# Example:
+# 200 PRINT "HELLO WORLD"
+# 210 PRINT X
+def _parse_print(tokens: list[str], remainder_string: str) -> list[str]:
+    match = re.match(r'^PRINT (.+)$', remainder_string)
+    if match:
+        del tokens[-3:]
+        tokens[0] = "<parse_complete>"
+        tokens.append("<print>")
+        tokens.append("<unparsed_expression>")
+        tokens.append(match.group(1))
     return tokens
 
 
