@@ -32,14 +32,14 @@ parse_tokens = [
     "<delete_program_line>"
     "<program_line>",
     "<line_number>",
-    "<string_literal>",
-    "<numeric_literal>",
+    "<line_number_ref>",
     "<single_space>",
     "<remark>",
     "<goto>",
     "<destination>"
     "<gosub>",
     "<gosub_return>",
+    "<if_then>",
     "<if>",
     "<then>",
     "<input>",
@@ -47,6 +47,9 @@ parse_tokens = [
     "<end>",
     "<numeric_variable>",
     "<string_variable>",
+    "<string_literal>",
+    "<numeric_literal>",
+    "<unparsed_expression>"
     "<numeric_expression>",
     "<string_expression>",
     "<boolean_expression>",

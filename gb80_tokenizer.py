@@ -39,7 +39,8 @@ def _parse_program_line(line: str) -> list[str]:
     # A list of subsidiary parse methods that we will cycle through looking for a match.
     _parsers = [
         _parse_remark,
-        _parse_goto
+        _parse_goto,
+        _parse_if_then
     ]
 
     # First, check to see that the input line matches the general format that any
@@ -109,6 +110,22 @@ def _parse_goto(tokens: list[str], remainder_string: str) -> list[str]:
         tokens.append("<goto>")
         tokens.append("<destination>")
         tokens.append(match.group(1))
+    return tokens
+
+
+def _parse_if_then(tokens: list[str], remainder_string: str) -> list[str]:
+    match = re.match(r'^IF (.+) THEN (\d+)$', remainder_string)
+    if match:
+        del tokens[-2:]
+        tokens[0] = "<parse_complete>"
+        tokens.append("<if_then>")
+        tokens.append("<if>")
+        tokens.append("<single_space>")
+        tokens.append("<unparsed_expression>")
+        tokens.append(match.group(1))
+        tokens.append("<single_space>")
+        tokens.append("<line_number_ref>")
+        tokens.append(match.group(2))
     return tokens
 
 
