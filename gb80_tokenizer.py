@@ -41,7 +41,9 @@ def _parse_program_line(line: str) -> list[str]:
         _parse_remark,
         _parse_goto,
         _parse_if_then,
-        _parse_gosub
+        _parse_gosub,
+        _parse_return,
+        _parse_end
     ]
 
     match_only = re.match(r'^(\d+)$', line)
@@ -85,12 +87,12 @@ def _parse_program_line(line: str) -> list[str]:
         remainder_string = tokens[6]
         tokens = parser(tokens, remainder_string)
 
-    if tokens[0] != "<parse_complete>" :
-        tokens = [ "<error>" ]
-
-    if tokens[1] == "<program_line>":
+    if (tokens[0] == "<parse_complete>") and (tokens[1] == "<program_line>") :
         tokens.append("<original_line>")
         tokens.append(line)
+
+    if tokens[0] != "<parse_complete>" :
+        tokens = [ "<error>" ]
 
     return tokens
 
@@ -163,6 +165,28 @@ def _parse_gosub(tokens: list[str], remainder_string: str) -> list[str]:
         tokens.append("<gosub>")
         tokens.append("<line_number_ref>")
         tokens.append(match.group(1))
+    return tokens
+
+
+# Parse a BASIC RETURN statement.
+# Example:
+# 1680 RETURN
+def _parse_return(tokens: list[str], remainder_string: str) -> list[str]:
+    if remainder_string == "RETURN":
+        del tokens[-3:]
+        tokens[0] = "<parse_complete>"
+        tokens.append("<gosub_return>")
+    return tokens
+
+
+# Parse a BASIC END statement.
+# Example:
+# 990 END
+def _parse_end(tokens: list[str], remainder_string: str) -> list[str]:
+    if remainder_string == "END":
+        del tokens[-3:]
+        tokens[0] = "<parse_complete>"
+        tokens.append("<end>")
     return tokens
 
 
