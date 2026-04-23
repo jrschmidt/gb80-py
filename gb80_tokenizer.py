@@ -40,7 +40,8 @@ def _parse_program_line(line: str) -> list[str]:
     _parsers = [
         _parse_remark,
         _parse_goto,
-        _parse_if_then
+        _parse_if_then,
+        _parse_gosub
     ]
 
     match_only = re.match(r'^(\d+)$', line)
@@ -148,6 +149,20 @@ def _parse_if_then(tokens: list[str], remainder_string: str) -> list[str]:
         tokens.append("<then>")
         tokens.append("<line_number_ref>")
         tokens.append(match.group(2))
+    return tokens
+
+
+# Parse a BASIC GOSUB statement.
+# Example:
+# 650 GOSUB 12000
+def _parse_gosub(tokens: list[str], remainder_string: str) -> list[str]:
+    match = re.match(r'^GOSUB (\d+)$', remainder_string)
+    if match:
+        del tokens[-3:]
+        tokens[0] = "<parse_complete>"
+        tokens.append("<gosub>")
+        tokens.append("<line_number_ref>")
+        tokens.append(match.group(1))
     return tokens
 
 
