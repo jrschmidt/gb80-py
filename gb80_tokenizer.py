@@ -44,6 +44,7 @@ def _parse_program_line(line: str) -> list[str]:
         _parse_gosub,
         _parse_return,
         _parse_print,
+        _parse_input,
         _parse_end
     ]
 
@@ -183,13 +184,42 @@ def _parse_return(tokens: list[str], remainder_string: str) -> list[str]:
 # Parse a BASIC PRINT statement.
 # Example:
 # 200 PRINT "HELLO WORLD"
-# 210 PRINT X
+# 220 PRINT T6$
+# 240 PRINT X
 def _parse_print(tokens: list[str], remainder_string: str) -> list[str]:
     match = re.match(r'^PRINT (.+)$', remainder_string)
     if match:
         del tokens[-3:]
         tokens[0] = "<parse_complete>"
         tokens.append("<print>")
+        tokens.append("<unparsed_expression>")
+        tokens.append(match.group(1))
+    return tokens
+
+
+# Parse a BASIC INPUT statement.
+# Example:
+# 520 INPUT X
+# 540 INPUT T$
+# 560 INPUT "WHAT IS YOUR FIRST NUMBER?"; A1
+# 580 INPUT "WHAT IS YOUR NAME?"; N$
+def _parse_input(tokens: list[str], remainder_string: str) -> list[str]:
+    match_with_query = re.match(r'^INPUT "([^"]+)"; ?(.{1,3})$', remainder_string)
+    match = re.match(r'^INPUT (.{1,3})$', remainder_string)
+    if match_with_query:
+        del tokens[-3:]
+        tokens[0] = "<parse_complete>"
+        tokens.append("<input>")
+        tokens.append("<query_string>")
+        tokens.append(match_with_query.group(1))
+        tokens.append("<receiving_variable>")
+        tokens.append("<unparsed_expression>")
+        tokens.append(match_with_query.group(2))
+    elif match:
+        del tokens[-3:]
+        tokens[0] = "<parse_complete>"
+        tokens.append("<input>")
+        tokens.append("<receiving_variable>")
         tokens.append("<unparsed_expression>")
         tokens.append(match.group(1))
     return tokens

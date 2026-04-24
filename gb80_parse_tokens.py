@@ -43,6 +43,8 @@ parse_tokens = [
     "<then>",
     "<print>",
     "<input>",
+    "<query_string>",
+    "<receiving_variable>",
     "<semicolon>",
     "<end>",
     "<numeric_variable>",
