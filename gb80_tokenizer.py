@@ -50,6 +50,8 @@ def _parse_program_line(line: str) -> list[str]:
     # A list of subsidiary parse methods that we will cycle through looking for a match.
     _parsers = [
         _parse_remark,
+        _parse_numeric_assignment,
+        _parse_string_assignment,
         _parse_goto,
         _parse_if_then,
         _parse_gosub,
@@ -273,6 +275,28 @@ def _parse_line_number(digits: str) -> str:
         return "<error>"
     else:
         return digits
+
+
+def _parse_numeric_assignment(tokens: list[str], remainder_string: str) -> list[str]:
+    return tokens
+
+
+def _parse_string_assignment(tokens: list[str], remainder_string: str) -> list[str]:
+    return tokens
+
+
+def _parse_numeric_variable(var_string: str) -> list[str]:
+    match = re.match(r'^([A-Z]\d?)$', var_string)
+    if match:
+        return ["<numeric_variable>", match.group(1)]
+    return ["<error>"]
+
+
+def _parse_string_variable(var_string: str) -> list[str]:
+    match = re.match(r'^([A-Z]\d?\$)$', var_string)
+    if match:
+        return ["<string_variable>", match.group(1)]
+    return ["<error>"]
 
 
 # --------   Console Command "Primary" Parser   --------
