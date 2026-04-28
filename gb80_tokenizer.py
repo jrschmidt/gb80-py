@@ -11,15 +11,6 @@ def tokenize(line: str) -> list[str]:
 # in an interactive BASIC terminal will generally be either a program line or a
 # console command. A program line will start with a line number. A console command
 # will usually be one simple word like LIST or RUN.
-# 
-# "<no_match>" vs "<error>":
-# If an entered line does not match whatever a particular method is looking for, it
-# will return with a "<no_match>" token, which will signal that we will look for the next
-# match. If there is a fatal mistake in the input line, it will return with an "<error>"
-# token, and attempts to parse it further will stop.
-# If an input line does not successfully match any valid construct, and returns with
-# "<no_match>" for all attempted matches, then it will return with an "<error>" token. An
-# "<error>" token should result in the terminal displaying a "SYNTAX ERROR" message.
 def _tokenize(line: str) -> list[str]:
 
     tokens = _parse_console_command(line)
@@ -126,7 +117,7 @@ def _parse_program_line(line: str) -> list[str]:
     return tokens
 
 
-# --------   "Subsidiary" Parsers   --------
+# --------   "Subsidiary" Parsers for Program Lines   --------
 # These are the parser methods that _parse_program_line() cycles through, trying to match
 # the input line with different types of BASIC program lines. When a match is found, the
 # method returns the appropriate tokens. If no match is found for that individual program
@@ -148,6 +139,56 @@ def _parse_remark(tokens: list[str], remainder_string: str) -> list[str]:
         del tokens[-3:]
         tokens[0] = "<parse_complete>"
         tokens.append("<remark>")
+    return tokens
+
+
+# Parse a numeric assignment statement
+# Example:
+# 220 X=100
+# 275 W=A+B+C
+# 350 H=(E1+E2)/V7
+def _parse_numeric_assignment(tokens: list[str], remainder_string: str) -> list[str]:
+    eq_pos = None
+    for pos in [1, 2, 3]:
+        if len(remainder_string) > pos and remainder_string[pos] == '=':
+            eq_pos = pos
+            break
+    if eq_pos is None:
+        return tokens
+
+    before_eq = remainder_string[:eq_pos]
+    after_eq = remainder_string[eq_pos + 1:]
+
+    space_idx = before_eq.find(' ')
+    var_string = before_eq[:space_idx] if space_idx != -1 else before_eq
+
+    num_var_result = _parse_numeric_variable(var_string)
+    if num_var_result[0] == "<no_match>":
+        return tokens
+
+    if after_eq.startswith('  '):
+        return tokens
+    expression_string = after_eq[1:] if after_eq.startswith(' ') else after_eq
+    if not expression_string or expression_string.isspace():
+        return tokens
+
+    del tokens[-3:]
+    tokens[0] = "<parse_complete>"
+    tokens.append("<numeric_assignment>")
+    tokens.extend(num_var_result)
+    tokens.append("<equals>")
+    tokens.append("<numeric_expression>")
+    tokens.append("<unparsed_expression>")
+    tokens.append(expression_string)
+    return tokens
+
+
+# Parse a string assignment statement
+# Example:
+# 640 F$="FAILURE"
+# 710 N$=N1$+N2$
+# 880 P5$="THE ACCOUNT NUMBER IS "+A1$
+def _parse_string_assignment(tokens: list[str], remainder_string: str) -> list[str]:
     return tokens
 
 
@@ -264,7 +305,7 @@ def _parse_end(tokens: list[str], remainder_string: str) -> list[str]:
     return tokens
 
 
-# --------   "Utility" Parsers   -------- 
+# --------   "Utility" Parsers for Program Lines   -------- 
 # For additional parsing of common constructs, such as variable names or numeric
 # expressions, after a program line has been identified as a particular type of
 # program line (GOTO, PRINT, etc.).
@@ -277,26 +318,18 @@ def _parse_line_number(digits: str) -> str:
         return digits
 
 
-def _parse_numeric_assignment(tokens: list[str], remainder_string: str) -> list[str]:
-    return tokens
-
-
-def _parse_string_assignment(tokens: list[str], remainder_string: str) -> list[str]:
-    return tokens
-
-
 def _parse_numeric_variable(var_string: str) -> list[str]:
     match = re.match(r'^([A-Z]\d?)$', var_string)
     if match:
         return ["<numeric_variable>", match.group(1)]
-    return ["<error>"]
+    return ["<no_match>"]
 
 
 def _parse_string_variable(var_string: str) -> list[str]:
     match = re.match(r'^([A-Z]\d?\$)$', var_string)
     if match:
         return ["<string_variable>", match.group(1)]
-    return ["<error>"]
+    return ["<no_match>"]
 
 
 # --------   Console Command "Primary" Parser   --------
