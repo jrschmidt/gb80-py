@@ -36,6 +36,8 @@ parse_tokens = [
     "<line_number_ref>",
     "<single_space>",
     "<remark>",
+    "<numeric_assignment>",
+    "<string_assignment>",
     "<goto>",
     "<gosub>",
     "<gosub_return>",

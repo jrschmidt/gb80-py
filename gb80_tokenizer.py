@@ -148,8 +148,38 @@ def _parse_remark(tokens: list[str], remainder_string: str) -> list[str]:
 # 275 W=A+B+C
 # 350 H=(E1+E2)/V7
 def _parse_numeric_assignment(tokens: list[str], remainder_string: str) -> list[str]:
+
+    return _parse_assignment(
+        tokens,
+        remainder_string,
+        [1, 2, 3],
+        _parse_numeric_variable,
+        "<numeric_assignment>",
+        "<numeric_expression>"
+    )
+
+
+# Parse a string assignment statement
+# Example:
+# 640 F$="FAILURE"
+# 710 N$=N1$+N2$
+# 880 P5$="THE ACCOUNT NUMBER IS "+A1$
+def _parse_string_assignment(tokens: list[str], remainder_string: str) -> list[str]:
+
+    return _parse_assignment(
+        tokens,
+        remainder_string,
+        [2, 3, 4],
+        _parse_string_variable,
+        "<string_assignment>",
+        "<string_expression>"
+    )
+
+
+def _parse_assignment(tokens: list[str], remainder_string: str, eq_positions: list[int],
+                      var_parser, assignment_token: str, expression_token: str) -> list[str]:
     eq_pos = None
-    for pos in [1, 2, 3]:
+    for pos in eq_positions:
         if len(remainder_string) > pos and remainder_string[pos] == '=':
             eq_pos = pos
             break
@@ -162,33 +192,24 @@ def _parse_numeric_assignment(tokens: list[str], remainder_string: str) -> list[
     space_idx = before_eq.find(' ')
     var_string = before_eq[:space_idx] if space_idx != -1 else before_eq
 
-    num_var_result = _parse_numeric_variable(var_string)
-    if num_var_result[0] == "<no_match>":
+    var_result = var_parser(var_string)
+    if var_result[0] == "<no_match>":
         return tokens
 
     if after_eq.startswith('  '):
-        return tokens
+        return ["<error>"]
     expression_string = after_eq[1:] if after_eq.startswith(' ') else after_eq
     if not expression_string or expression_string.isspace():
-        return tokens
+        return ["<error>"]
 
     del tokens[-3:]
     tokens[0] = "<parse_complete>"
-    tokens.append("<numeric_assignment>")
-    tokens.extend(num_var_result)
+    tokens.append(assignment_token)
+    tokens.extend(var_result)
     tokens.append("<equals>")
-    tokens.append("<numeric_expression>")
+    tokens.append(expression_token)
     tokens.append("<unparsed_expression>")
     tokens.append(expression_string)
-    return tokens
-
-
-# Parse a string assignment statement
-# Example:
-# 640 F$="FAILURE"
-# 710 N$=N1$+N2$
-# 880 P5$="THE ACCOUNT NUMBER IS "+A1$
-def _parse_string_assignment(tokens: list[str], remainder_string: str) -> list[str]:
     return tokens
 
 
