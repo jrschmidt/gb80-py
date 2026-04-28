@@ -197,10 +197,10 @@ def _parse_assignment(tokens: list[str], remainder_string: str, eq_positions: li
         return tokens
 
     if after_eq.startswith('  '):
-        return ["<error>"]
+        return [ "<error>" ]
     expression_string = after_eq[1:] if after_eq.startswith(' ') else after_eq
     if not expression_string or expression_string.isspace():
-        return ["<error>"]
+        return [ "<error>" ]
 
     del tokens[-3:]
     tokens[0] = "<parse_complete>"
@@ -296,6 +296,23 @@ def _parse_print(tokens: list[str], remainder_string: str) -> list[str]:
 def _parse_input(tokens: list[str], remainder_string: str) -> list[str]:
     match_with_query = re.match(r'^INPUT "([^"]+)"; ?(.{1,3})$', remainder_string)
     match = re.match(r'^INPUT (.{1,3})$', remainder_string)
+
+    if match_with_query:
+        var_string = match_with_query.group(2)
+    elif match:
+        var_string = match.group(1)
+    else:
+        return tokens
+
+    num_var_result = _parse_numeric_variable(var_string)
+    str_var_result = _parse_string_variable(var_string)
+    if num_var_result[0] != "<no_match>":
+        var_result = num_var_result
+    elif str_var_result[0] != "<no_match>":
+        var_result = str_var_result
+    else:
+        return ["<error>"]
+
     if match_with_query:
         del tokens[-3:]
         tokens[0] = "<parse_complete>"
@@ -303,15 +320,13 @@ def _parse_input(tokens: list[str], remainder_string: str) -> list[str]:
         tokens.append("<query_string>")
         tokens.append(match_with_query.group(1))
         tokens.append("<receiving_variable>")
-        tokens.append("<unparsed_expression>")
-        tokens.append(match_with_query.group(2))
+        tokens.extend(var_result)
     elif match:
         del tokens[-3:]
         tokens[0] = "<parse_complete>"
         tokens.append("<input>")
         tokens.append("<receiving_variable>")
-        tokens.append("<unparsed_expression>")
-        tokens.append(match.group(1))
+        tokens.extend(var_result)
     return tokens
 
 
