@@ -227,6 +227,48 @@ def _parse_goto(tokens: list[str], remainder_string: str) -> list[str]:
     return tokens
 
 
+_NUMERIC_COMPARATORS = {
+    '=':  '<equals>',
+    '<>': '<not_equal>',
+    '>':  '<greater_than>',
+    '>=': '<greater_equal>',
+    '<':  '<lesser_than>',
+    '<=': '<lesser_equal>',
+}
+
+_STRING_COMPARATORS = {
+    '=':  '<equals>',
+    '<>': '<not_equals>',
+}
+
+
+def _parse_boolean_expression(
+    expr_string: str,
+    var_regex: str,
+    var_token: str,
+    comparators: dict,
+    expression_token: str,
+) -> list[str]:
+    comp_pattern = '|'.join(re.escape(c) for c in sorted(comparators, key=len, reverse=True))
+    if re.match(rf'^({var_regex})  ', expr_string):
+        return ['<error>']
+    match = re.match(rf'^({var_regex}) ?({comp_pattern}) ?(.+)$', expr_string)
+    if not match:
+        return ['<no_match>']
+    rest = match.group(3)
+    if rest.startswith(' '):
+        return ['<error>']
+    return [
+        '<boolean_expression>',
+        var_token,
+        match.group(1),
+        comparators[match.group(2)],
+        expression_token,
+        '<unparsed_expression>',
+        rest,
+    ]
+
+
 # Parse a BASIC IF/THEN statement.
 # Example:
 # 730 IF Z>A THEN 800
@@ -234,15 +276,31 @@ def _parse_goto(tokens: list[str], remainder_string: str) -> list[str]:
 def _parse_if_then(tokens: list[str], remainder_string: str) -> list[str]:
     match = re.match(r'^IF (.+) THEN (\d+)$', remainder_string)
     if match:
+        expr_string = match.group(1)
+        line_ref    = match.group(2)
+        if expr_string.endswith(' '):
+            return ['<error>']
+        bool_tokens = _parse_boolean_expression(
+            expr_string, r'[A-Z]\d?', '<numeric_variable>',
+            _NUMERIC_COMPARATORS, '<numeric_expression>'
+        )
+        if bool_tokens == ['<error>']:
+            return ['<error>']
+        if bool_tokens == ['<no_match>']:
+            bool_tokens = _parse_boolean_expression(
+                expr_string, r'[A-Z]\d?\$', '<string_variable>',
+                _STRING_COMPARATORS, '<string_expression>'
+            )
+        if bool_tokens in (['<error>'], ['<no_match>']):
+            return ['<error>']
         del tokens[-3:]
-        tokens[0] = "<parse_complete>"
-        tokens.append("<if_then>")
-        tokens.append("<if>")
-        tokens.append("<unparsed_expression>")
-        tokens.append(match.group(1))
-        tokens.append("<then>")
-        tokens.append("<line_number_ref>")
-        tokens.append(match.group(2))
+        tokens[0] = '<parse_complete>'
+        tokens.append('<if_then>')
+        tokens.append('<if>')
+        tokens.extend(bool_tokens)
+        tokens.append('<then>')
+        tokens.append('<line_number_ref>')
+        tokens.append(line_ref)
     return tokens
 
 
