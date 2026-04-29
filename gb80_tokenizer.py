@@ -242,6 +242,51 @@ _STRING_COMPARATORS = {
 }
 
 
+def _parse_string_expression(expr_string: str) -> list[str]:
+    result = ['<string_expression>']
+    s = expr_string
+
+    while True:
+        m = re.match(r'^([A-Z]\d?\$)', s)
+        if m:
+            result.extend(['<string_variable>', m.group(1)])
+            s = s[m.end():]
+        else:
+            m = re.match(r'^"([^"]*)"', s)
+            if m:
+                result.extend(['<string_literal>', m.group(1)])
+                s = s[m.end():]
+            else:
+                return ['<error>']
+
+        if not s:
+            break
+
+        if s.startswith('  '):
+            return ['<error>']
+        if s.startswith(' '):
+            s = s[1:]
+
+        if not s or s[0] != '+':
+            return ['<error>']
+
+        result.append('<concatenate>')
+        s = s[1:]
+
+        if not s:
+            return ['<error>']
+
+        if s.startswith('  '):
+            return ['<error>']
+        if s.startswith(' '):
+            s = s[1:]
+
+        if not s:
+            return ['<error>']
+
+    return result
+
+
 def _parse_boolean_expression(
     expr_string: str,
     var_regex: str,
