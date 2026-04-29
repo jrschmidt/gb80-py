@@ -207,9 +207,15 @@ def _parse_assignment(tokens: list[str], remainder_string: str, eq_positions: li
     tokens.append(assignment_token)
     tokens.extend(var_result)
     tokens.append("<equals>")
-    tokens.append(expression_token)
-    tokens.append("<unparsed_expression>")
-    tokens.append(expression_string)
+    if expression_token == '<string_expression>':
+        expr_tokens = _parse_string_expression(expression_string)
+        if expr_tokens == ['<error>']:
+            return ['<error>']
+        tokens.extend(expr_tokens)
+    else:
+        tokens.append(expression_token)
+        tokens.append("<unparsed_expression>")
+        tokens.append(expression_string)
     return tokens
 
 
@@ -303,6 +309,16 @@ def _parse_boolean_expression(
     rest = match.group(3)
     if rest.startswith(' '):
         return ['<error>']
+    if expression_token == '<string_expression>':
+        expr_tokens = _parse_string_expression(rest)
+        if expr_tokens == ['<error>']:
+            return ['<error>']
+        return [
+            '<boolean_expression>',
+            var_token,
+            match.group(1),
+            comparators[match.group(2)],
+        ] + expr_tokens
     return [
         '<boolean_expression>',
         var_token,
