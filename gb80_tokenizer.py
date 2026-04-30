@@ -290,6 +290,7 @@ def _parse_string_expression(expr_string: str) -> list[str]:
         if not s:
             return ['<error>']
 
+    result.append('<string_expression_end>')
     return result
 
 
