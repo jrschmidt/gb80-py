@@ -212,10 +212,11 @@ def _parse_assignment(tokens: list[str], remainder_string: str, eq_positions: li
         if expr_tokens == ['<error>']:
             return ['<error>']
         tokens.extend(expr_tokens)
-    else:
-        tokens.append(expression_token)
-        tokens.append("<unparsed_expression>")
-        tokens.append(expression_string)
+    elif expression_token == '<numeric_expression>':
+        expr_tokens = _parse_numeric_expression(expression_string)
+        if expr_tokens in (['<error>'], ['<no_match>']):
+            return ['<error>']
+        tokens.extend(expr_tokens)
     return tokens
 
 
@@ -288,6 +289,7 @@ def _parse_numeric_expression(expr_string: str) -> list[str]:
 
         return ['<no_match>']
 
+    result.append('<numeric_expression_end>')
     return result
 
 
@@ -362,16 +364,18 @@ def _parse_boolean_expression(
             var_token,
             match.group(1),
             comparators[match.group(2)],
-        ] + expr_tokens
-    return [
-        '<boolean_expression>',
-        var_token,
-        match.group(1),
-        comparators[match.group(2)],
-        expression_token,
-        '<unparsed_expression>',
-        rest,
-    ]
+        ] + expr_tokens + ['<boolean_expression_end>']
+    elif expression_token == '<numeric_expression>':
+        expr_tokens = _parse_numeric_expression(rest)
+        if expr_tokens in (['<error>'], ['<no_match>']):
+            return ['<error>']
+        return [
+            '<boolean_expression>',
+            var_token,
+            match.group(1),
+            comparators[match.group(2)],
+        ] + expr_tokens + ['<boolean_expression_end>']
+    return ['<error>']
 
 
 # Parse a BASIC IF/THEN statement.

@@ -60,6 +60,7 @@ parse_tokens = [
     "<string_expression>",
     "<string_expression_end>",
     "<boolean_expression>",
+    "<boolean_expression_end>",
     "<concatenate>",
     "<plus>",
     "<minus>",
