@@ -445,12 +445,29 @@ def _parse_return(tokens: list[str], remainder_string: str) -> list[str]:
 # 240 PRINT X
 def _parse_print(tokens: list[str], remainder_string: str) -> list[str]:
     match = re.match(r'^PRINT (.+)$', remainder_string)
-    if match:
-        del tokens[-3:]
-        tokens[0] = "<parse_complete>"
-        tokens.append("<print>")
-        tokens.append("<unparsed_expression>")
-        tokens.append(match.group(1))
+    if not match:
+        return tokens
+
+    arg = match.group(1)
+
+    num_result = _parse_numeric_variable(arg)
+    if num_result[0] != '<no_match>':
+        arg_tokens = num_result
+    else:
+        str_result = _parse_string_variable(arg)
+        if str_result[0] != '<no_match>':
+            arg_tokens = str_result
+        else:
+            lit_match = re.match(r'^"([^"]*)"$', arg)
+            if lit_match:
+                arg_tokens = ['<string_literal>', lit_match.group(1)]
+            else:
+                return ['<error>']
+
+    del tokens[-3:]
+    tokens[0] = '<parse_complete>'
+    tokens.append('<print>')
+    tokens.extend(arg_tokens)
     return tokens
 
 
