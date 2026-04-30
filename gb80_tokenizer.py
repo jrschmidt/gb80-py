@@ -247,6 +247,49 @@ _STRING_COMPARATORS = {
     '<>': '<not_equals>',
 }
 
+_NUMERIC_OP_TOKENS = {
+    '+': '<plus>',
+    '-': '<minus>',
+    '*': '<times>',
+    '/': '<divide>',
+    '^': '<power>',
+    '(': '<left_paren>',
+    ')': '<right_paren>',
+}
+
+
+def _parse_numeric_expression(expr_string: str) -> list[str]:
+    result = ['<numeric_expression>']
+    s = expr_string
+
+    while s:
+        if s.startswith('  '):
+            return ['<error>']
+        if s.startswith(' '):
+            s = s[1:]
+            continue
+
+        m = re.match(r'^([A-Z]\d?)(?!\$)', s)
+        if m:
+            result.extend(_parse_numeric_variable(m.group(1)))
+            s = s[m.end():]
+            continue
+
+        m = re.match(r'^(\d+(?:\.\d+)?)', s)
+        if m:
+            result.extend(['<numeric_literal>', m.group(1)])
+            s = s[m.end():]
+            continue
+
+        if s[0] in _NUMERIC_OP_TOKENS:
+            result.append(_NUMERIC_OP_TOKENS[s[0]])
+            s = s[1:]
+            continue
+
+        return ['<no_match>']
+
+    return result
+
 
 def _parse_string_expression(expr_string: str) -> list[str]:
     result = ['<string_expression>']
