@@ -3,6 +3,33 @@ from gb80_parse_tokens import parse_tokens
 from gb80_constants import MAX_LINE_NUMBER
 
 
+# LOCAL CONSTANTS
+
+_NUMERIC_COMPARATORS = {
+    '=':  '<equals>',
+    '<>': '<not_equal>',
+    '>':  '<greater_than>',
+    '>=': '<greater_equal>',
+    '<':  '<lesser_than>',
+    '<=': '<lesser_equal>',
+}
+
+_STRING_COMPARATORS = {
+    '=':  '<equals>',
+    '<>': '<not_equals>',
+}
+
+_NUMERIC_OP_TOKENS = {
+    '+': '<plus>',
+    '-': '<minus>',
+    '*': '<times>',
+    '/': '<divide>',
+    '^': '<power>',
+    '(': '<left_paren>',
+    ')': '<right_paren>',
+}
+
+
 def tokenize(line: str) -> list[str]:
     return _tokenize(line)
 
@@ -10,7 +37,7 @@ def tokenize(line: str) -> list[str]:
 # Lines that are input on the terminal are parsed into tokens. A valid line entered
 # in an interactive BASIC terminal will generally be either a program line or a
 # console command. A program line will start with a line number. A console command
-# will usually be one simple word like LIST or RUN.
+# will usually be one simple keyword like LIST or RUN.
 def _tokenize(line: str) -> list[str]:
 
     tokens = _parse_console_command(line)
@@ -175,7 +202,7 @@ def _parse_string_assignment(tokens: list[str], remainder_string: str) -> list[s
         "<string_expression>"
     )
 
-
+# Used by _parse_numeric_assignment() and _parse_string_assignment().
 def _parse_assignment(tokens: list[str], remainder_string: str, eq_positions: list[int],
                       var_parser, assignment_token: str, expression_token: str) -> list[str]:
     eq_pos = None
@@ -232,150 +259,6 @@ def _parse_goto(tokens: list[str], remainder_string: str) -> list[str]:
         tokens.append("<line_number_ref>")
         tokens.append(match.group(1))
     return tokens
-
-
-_NUMERIC_COMPARATORS = {
-    '=':  '<equals>',
-    '<>': '<not_equal>',
-    '>':  '<greater_than>',
-    '>=': '<greater_equal>',
-    '<':  '<lesser_than>',
-    '<=': '<lesser_equal>',
-}
-
-_STRING_COMPARATORS = {
-    '=':  '<equals>',
-    '<>': '<not_equals>',
-}
-
-_NUMERIC_OP_TOKENS = {
-    '+': '<plus>',
-    '-': '<minus>',
-    '*': '<times>',
-    '/': '<divide>',
-    '^': '<power>',
-    '(': '<left_paren>',
-    ')': '<right_paren>',
-}
-
-
-def _parse_numeric_expression(expr_string: str) -> list[str]:
-    result = ['<numeric_expression>']
-    s = expr_string
-
-    while s:
-        if s.startswith('  '):
-            return ['<error>']
-        if s.startswith(' '):
-            s = s[1:]
-            continue
-
-        m = re.match(r'^([A-Z]\d?)(?!\$)', s)
-        if m:
-            result.extend(_parse_numeric_variable(m.group(1)))
-            s = s[m.end():]
-            continue
-
-        m = re.match(r'^(\d+(?:\.\d+)?)', s)
-        if m:
-            result.extend(['<numeric_literal>', m.group(1)])
-            s = s[m.end():]
-            continue
-
-        if s[0] in _NUMERIC_OP_TOKENS:
-            result.append(_NUMERIC_OP_TOKENS[s[0]])
-            s = s[1:]
-            continue
-
-        return ['<no_match>']
-
-    result.append('<numeric_expression_end>')
-    return result
-
-
-def _parse_string_expression(expr_string: str) -> list[str]:
-    result = ['<string_expression>']
-    s = expr_string
-
-    while True:
-        m = re.match(r'^([A-Z]\d?\$)', s)
-        if m:
-            result.extend(['<string_variable>', m.group(1)])
-            s = s[m.end():]
-        else:
-            m = re.match(r'^"([^"]*)"', s)
-            if m:
-                result.extend(['<string_literal>', m.group(1)])
-                s = s[m.end():]
-            else:
-                return ['<error>']
-
-        if not s:
-            break
-
-        if s.startswith('  '):
-            return ['<error>']
-        if s.startswith(' '):
-            s = s[1:]
-
-        if not s or s[0] != '+':
-            return ['<error>']
-
-        result.append('<concatenate>')
-        s = s[1:]
-
-        if not s:
-            return ['<error>']
-
-        if s.startswith('  '):
-            return ['<error>']
-        if s.startswith(' '):
-            s = s[1:]
-
-        if not s:
-            return ['<error>']
-
-    result.append('<string_expression_end>')
-    return result
-
-
-def _parse_boolean_expression(
-    expr_string: str,
-    var_regex: str,
-    var_token: str,
-    comparators: dict,
-    expression_token: str,
-) -> list[str]:
-    comp_pattern = '|'.join(re.escape(c) for c in sorted(comparators, key=len, reverse=True))
-    if re.match(rf'^({var_regex})  ', expr_string):
-        return ['<error>']
-    match = re.match(rf'^({var_regex}) ?({comp_pattern}) ?(.+)$', expr_string)
-    if not match:
-        return ['<no_match>']
-    rest = match.group(3)
-    if rest.startswith(' '):
-        return ['<error>']
-    if expression_token == '<string_expression>':
-        expr_tokens = _parse_string_expression(rest)
-        if expr_tokens == ['<error>']:
-            return ['<error>']
-        return [
-            '<boolean_expression>',
-            var_token,
-            match.group(1),
-            comparators[match.group(2)],
-        ] + expr_tokens + ['<boolean_expression_end>']
-    elif expression_token == '<numeric_expression>':
-        expr_tokens = _parse_numeric_expression(rest)
-        if expr_tokens in (['<error>'], ['<no_match>']):
-            return ['<error>']
-        return [
-            '<boolean_expression>',
-            var_token,
-            match.group(1),
-            comparators[match.group(2)],
-        ] + expr_tokens + ['<boolean_expression_end>']
-    return ['<error>']
 
 
 # Parse a BASIC IF/THEN statement.
@@ -550,6 +433,125 @@ def _parse_string_variable(var_string: str) -> list[str]:
     if match:
         return ["<string_variable>", match.group(1)]
     return ["<no_match>"]
+
+
+def _parse_numeric_expression(expr_string: str) -> list[str]:
+    result = ['<numeric_expression>']
+    s = expr_string
+
+    while s:
+        if s.startswith('  '):
+            return ['<error>']
+        if s.startswith(' '):
+            s = s[1:]
+            continue
+
+        m = re.match(r'^([A-Z]\d?)(?!\$)', s)
+        if m:
+            result.extend(_parse_numeric_variable(m.group(1)))
+            s = s[m.end():]
+            continue
+
+        m = re.match(r'^(\d+(?:\.\d+)?)', s)
+        if m:
+            result.extend(['<numeric_literal>', m.group(1)])
+            s = s[m.end():]
+            continue
+
+        if s[0] in _NUMERIC_OP_TOKENS:
+            result.append(_NUMERIC_OP_TOKENS[s[0]])
+            s = s[1:]
+            continue
+
+        return ['<no_match>']
+
+    result.append('<numeric_expression_end>')
+    return result
+
+
+def _parse_string_expression(expr_string: str) -> list[str]:
+    result = ['<string_expression>']
+    s = expr_string
+
+    while True:
+        m = re.match(r'^([A-Z]\d?\$)', s)
+        if m:
+            result.extend(['<string_variable>', m.group(1)])
+            s = s[m.end():]
+        else:
+            m = re.match(r'^"([^"]*)"', s)
+            if m:
+                result.extend(['<string_literal>', m.group(1)])
+                s = s[m.end():]
+            else:
+                return ['<error>']
+
+        if not s:
+            break
+
+        if s.startswith('  '):
+            return ['<error>']
+        if s.startswith(' '):
+            s = s[1:]
+
+        if not s or s[0] != '+':
+            return ['<error>']
+
+        result.append('<concatenate>')
+        s = s[1:]
+
+        if not s:
+            return ['<error>']
+
+        if s.startswith('  '):
+            return ['<error>']
+        if s.startswith(' '):
+            s = s[1:]
+
+        if not s:
+            return ['<error>']
+
+    result.append('<string_expression_end>')
+    return result
+
+
+def _parse_boolean_expression(
+    expr_string: str,
+    var_regex: str,
+    var_token: str,
+    comparators: dict,
+    expression_token: str,
+) -> list[str]:
+    comp_pattern = '|'.join(re.escape(c) for c in sorted(comparators, key=len, reverse=True))
+    if re.match(rf'^({var_regex})  ', expr_string):
+        return ['<error>']
+    match = re.match(rf'^({var_regex}) ?({comp_pattern}) ?(.+)$', expr_string)
+    if not match:
+        return ['<no_match>']
+    rest = match.group(3)
+    if rest.startswith(' '):
+        return ['<error>']
+    if expression_token == '<string_expression>':
+        expr_tokens = _parse_string_expression(rest)
+        if expr_tokens == ['<error>']:
+            return ['<error>']
+        return [
+            '<boolean_expression>',
+            var_token,
+            match.group(1),
+            comparators[match.group(2)],
+        ] + expr_tokens + ['<boolean_expression_end>']
+    elif expression_token == '<numeric_expression>':
+        expr_tokens = _parse_numeric_expression(rest)
+        if expr_tokens in (['<error>'], ['<no_match>']):
+            return ['<error>']
+        return [
+            '<boolean_expression>',
+            var_token,
+            match.group(1),
+            comparators[match.group(2)],
+        ] + expr_tokens + ['<boolean_expression_end>']
+    return ['<error>']
 
 
 # --------   Console Command "Primary" Parser   --------
