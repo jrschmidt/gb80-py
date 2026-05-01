@@ -338,8 +338,10 @@ def _parse_input(tokens: list[str], remainder_string: str) -> list[str]:
     match = re.match(r'^INPUT (.{1,3})$', remainder_string)
 
     if match_with_query:
+        query_string = match_with_query.group(1)
         var_string = match_with_query.group(2)
     elif match:
+        query_string = ""
         var_string = match.group(1)
     else:
         return tokens
@@ -353,20 +355,13 @@ def _parse_input(tokens: list[str], remainder_string: str) -> list[str]:
     else:
         return ["<error>"]
 
-    if match_with_query:
-        del tokens[-3:]
-        tokens[0] = "<parse_complete>"
-        tokens.append("<input>")
-        tokens.append("<query_string>")
-        tokens.append(match_with_query.group(1))
-        tokens.append("<receiving_variable>")
-        tokens.extend(var_result)
-    elif match:
-        del tokens[-3:]
-        tokens[0] = "<parse_complete>"
-        tokens.append("<input>")
-        tokens.append("<receiving_variable>")
-        tokens.extend(var_result)
+    del tokens[-3:]
+    tokens[0] = "<parse_complete>"
+    tokens.append("<input>")
+    tokens.append("<query_string>")
+    tokens.append(query_string)
+    tokens.append("<receiving_variable>")
+    tokens.extend(var_result)
     return tokens
 
 
