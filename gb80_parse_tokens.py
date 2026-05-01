@@ -39,8 +39,6 @@ parse_tokens = [
     "<numeric_assignment>",
     "<string_assignment>",
     "<goto>",
-    "<gosub>",
-    "<gosub_return>",
     "<if_then>",
     "<if>",
     "<then>",
@@ -75,4 +73,12 @@ parse_tokens = [
     "<greater_equal>",
     "<lesser_than>",
     "<lesser_equal>"
+    "<numeric_equals>",
+    "<string_equals>",
+    "<numeric_not_equal>",
+    "<string_not_equal>",
+    "<numeric_print>",
+    "<string_print>",
+    "<numeric_input>",
+    "<string_input>"
 ]

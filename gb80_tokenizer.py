@@ -72,8 +72,6 @@ def _parse_program_line(line: str) -> list[str]:
         _parse_string_assignment,
         _parse_goto,
         _parse_if_then,
-        _parse_gosub,
-        _parse_return,
         _parse_print,
         _parse_input,
         _parse_end
@@ -293,31 +291,6 @@ def _parse_if_then(tokens: list[str], remainder_string: str) -> list[str]:
         tokens.append('<then>')
         tokens.append('<line_number_ref>')
         tokens.append(line_ref)
-    return tokens
-
-
-# Parse a BASIC GOSUB statement.
-# Example:
-# 650 GOSUB 12000
-def _parse_gosub(tokens: list[str], remainder_string: str) -> list[str]:
-    match = re.match(r'^GOSUB (\d+)$', remainder_string)
-    if match:
-        del tokens[-3:]
-        tokens[0] = "<parse_complete>"
-        tokens.append("<gosub>")
-        tokens.append("<line_number_ref>")
-        tokens.append(match.group(1))
-    return tokens
-
-
-# Parse a BASIC RETURN statement.
-# Example:
-# 1680 RETURN
-def _parse_return(tokens: list[str], remainder_string: str) -> list[str]:
-    if remainder_string == "RETURN":
-        del tokens[-3:]
-        tokens[0] = "<parse_complete>"
-        tokens.append("<gosub_return>")
     return tokens
 
 
