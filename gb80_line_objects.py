@@ -18,3 +18,7 @@ def delete_program_line(line_number: int) -> None:
 
 def get_line_numbers() -> list[int]:
     return sorted(_program_lines.keys())
+
+
+def get_line_object(line_number: int) -> BasicLine | None:
+    return _program_lines.get(line_number)
