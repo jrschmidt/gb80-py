@@ -2,6 +2,7 @@ from gb80_terminal import Main, TextDisplay, DevTextDisplay
 from gb80_tokenizer import tokenize
 from gb80_line_builder import build_line_object
 from gb80_line_objects import add_program_line, delete_program_line
+from gb80_devtools import DEV_COMMANDS
 
 
 _state = {"mode": "dev"}
@@ -17,6 +18,15 @@ def handle_init(self) -> None:
 
 def handle_new_line(self, line: str) -> None:
     display = self.query_one(TextDisplay)
+
+    if _state["mode"] == "dev":
+        for cmd_key, cmd_fn in DEV_COMMANDS.items():
+            if line == cmd_key or line.startswith(cmd_key + " "):
+                arg = line[len(cmd_key):].strip()
+                for output_line in cmd_fn(arg):
+                    display.append_line(output_line)
+                return
+
     tokens = tokenize(line)
     line_object = build_line_object(tokens)
 
