@@ -34,6 +34,17 @@ class TextDisplay(Static):
             self.update_lines([char])
 
 
+class DevTextDisplay(TextDisplay):
+    def update_lines(self, lines: list[str]) -> None:
+        if len(lines) > MAX_LINES or any(len(line) > MAX_COLS for line in lines):
+            raise ValueError("Lines in lines[] buffer exceeds maximum.")
+        self.lines = lines
+        rendered = list(lines)
+        if rendered:
+            rendered[-1] += "[blink underline] [/]"
+        self.update("\n".join(rendered))
+
+
 class Main(App):
     CSS = """
     Screen{
@@ -49,6 +60,15 @@ class Main(App):
         padding: 1 3;
         border: solid green;
     }
+
+    DevTextDisplay {
+        background: black;
+        color: white;
+        width: 88;
+        height: 28;
+        padding: 1 3;
+        border: solid white;
+    }
     """
 
     BINDINGS = [
@@ -56,8 +76,10 @@ class Main(App):
         Binding("ctrl+r", "action_one", "ACTION ONE"),
     ]
 
+    DISPLAY_CLASS: type = TextDisplay
+
     def compose(self) -> ComposeResult:
-        yield TextDisplay()
+        yield self.DISPLAY_CLASS()
         yield Footer()
 
     def on_init(self) -> None:
