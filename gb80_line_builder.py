@@ -5,35 +5,57 @@ def build_line_object(tokens: list[str]) -> BasicLine:
     return _build_line_object(tokens)
 
 
-def _build_remark(tokens: list[str], result: dict) -> dict | None:
-    if tokens[4] != "<remark>":
+def _build_remark(tokens: list[str]) -> dict | None:
+    if tokens[4] == "<remark>":
+        inserts =  {"op_type": "<remark>"}
+        return inserts
+
+    else:
         return None
-    return result
 
 
-def _build_end(tokens: list[str], result: dict) -> dict | None:
-    if tokens[4] != "<end>":
+def _build_goto(tokens: list[str]) -> dict | None:
+    if tokens[4] == "<goto>":
+        inserts = {"op_type": "<goto>"}
+
+        idx = tokens.index("<line_number_ref>")
+        dest_str = tokens[idx + 1]
+        if dest_str.isdigit():
+            dest = int(dest_str)
+            inserts["destination"] = dest
+
+        return inserts
+
+    else:
         return None
-    return result
+
+
+def _build_end(tokens: list[str]) -> dict | None:
+    if tokens[4] == "<end>":
+        inserts =  {"op_type": "<end>"}
+        return inserts
+
+    else:
+        return None
 
 
 def _build_line_object(tokens: list[str]) -> BasicLine:
     _builders = [
         _build_remark,
+        _build_goto,
         _build_end,
     ]
-    if len(tokens) < 5 or tokens[1] != "<program_line>":
-        keys = [chr(ord('a') + i) for i in range(len(tokens))]
-        return dict(zip(keys, tokens))
-    result = {"op_type": tokens[4]}
-    matched = False
+
+    # line_object = {"op_type": tokens[4]}
+    line_object = {}
+
     for builder in _builders:
-        if builder(tokens, result) is not None:
-            matched = True
+        inserts: BasicLine = builder(tokens)
+        if inserts:
+            line_object |= inserts
             break
-    if not matched:
-        keys = [chr(ord('a') + i) for i in range(len(tokens))]
-        return dict(zip(keys, tokens))
+
     idx = tokens.index("<original_line>")
-    result["text"] = tokens[idx + 1]
-    return result
+    line_object["text"] = tokens[idx + 1]
+
+    return line_object
