@@ -91,9 +91,10 @@ class Main(App):
     def on_key(self, event) -> None:
         display = self.query_one(TextDisplay)
         if event.key == "enter":
-            self.on_new_line(self.input_line)
-            self.input_line = ""
-            display.append_line("")
+            if self.input_line:
+                self.on_new_line(self.input_line)
+                self.input_line = ""
+                display.append_line("")
         elif event.key == "backspace":
             if self.input_line:
                 display.update_lines(display.lines[:-1] + [display.lines[-1][:-1]])
