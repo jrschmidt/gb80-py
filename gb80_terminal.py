@@ -11,12 +11,25 @@ class TextDisplay(Static):
     def __init__(self):
         super().__init__("")
         self.lines: list[str] = []
+        self._dev_mode: bool = False
+
+    def set_mode(self, mode: str) -> None:
+        self._dev_mode = mode == "dev"
+        if self._dev_mode:
+            self.styles.color = "white"
+            self.styles.border = ("solid", "white")
+            self.styles.text_style = "none"
+        else:
+            self.styles.color = "green"
+            self.styles.border = ("solid", "green")
+            self.styles.text_style = "bold"
+        self.update_lines([])
 
     def update_lines(self, lines: list[str]) -> None:
         if len(lines) > MAX_LINES or any(len(line) > MAX_COLS for line in lines):
             raise ValueError("Lines in lines[] buffer exceeds maximum.")
         self.lines = lines
-        rendered = [line.upper() for line in lines]
+        rendered = list(lines) if self._dev_mode else [line.upper() for line in lines]
         if rendered:
             rendered[-1] += "[blink underline] [/]"
         self.update("\n".join(rendered))
@@ -34,17 +47,6 @@ class TextDisplay(Static):
             self.update_lines([char])
 
 
-class DevTextDisplay(TextDisplay):
-    def update_lines(self, lines: list[str]) -> None:
-        if len(lines) > MAX_LINES or any(len(line) > MAX_COLS for line in lines):
-            raise ValueError("Lines in lines[] buffer exceeds maximum.")
-        self.lines = lines
-        rendered = list(lines)
-        if rendered:
-            rendered[-1] += "[blink underline] [/]"
-        self.update("\n".join(rendered))
-
-
 class Main(App):
     CSS = """
     Screen{
@@ -60,26 +62,16 @@ class Main(App):
         padding: 1 3;
         border: solid green;
     }
-
-    DevTextDisplay {
-        background: black;
-        color: white;
-        width: 88;
-        height: 28;
-        padding: 1 3;
-        border: solid white;
-    }
     """
 
     BINDINGS = [
-        Binding("ctrl+q", "quit", "QUIT"),
-        Binding("ctrl+r", "action_one", "ACTION ONE"),
+        Binding("ctrl+b", "basic_mode", "BASIC", key_display="^B"),
+        Binding("ctrl+d", "dev_mode", "DEV", key_display="^D"),
+        Binding("ctrl+q", "quit", "QUIT", key_display="^Q"),
     ]
 
-    DISPLAY_CLASS: type = TextDisplay
-
     def compose(self) -> ComposeResult:
-        yield self.DISPLAY_CLASS()
+        yield TextDisplay()
         yield Footer()
 
     def on_init(self) -> None:
@@ -91,6 +83,9 @@ class Main(App):
     input_line: str = ""
 
     def on_new_line(self, line: str) -> None:
+        pass
+
+    def on_mode_changed(self, mode: str) -> None:
         pass
 
     def on_key(self, event) -> None:
@@ -107,6 +102,16 @@ class Main(App):
             display.append_character(event.character)
             self.input_line += event.character.upper()
 
-    def action_action_one(self) -> None:
+    def action_basic_mode(self) -> None:
         display = self.query_one(TextDisplay)
-        display.update_lines(["YOU PRESSED R!", "STATE UPDATED."])
+        if not display._dev_mode:
+            return
+        display.set_mode("basic")
+        self.on_mode_changed("basic")
+
+    def action_dev_mode(self) -> None:
+        display = self.query_one(TextDisplay)
+        if display._dev_mode:
+            return
+        display.set_mode("dev")
+        self.on_mode_changed("dev")

@@ -5,6 +5,27 @@ def build_line_object(tokens: list[str]) -> BasicLine:
     return _build_line_object(tokens)
 
 
+def _build_line_object(tokens: list[str]) -> BasicLine:
+    _builders = [
+        _build_remark,
+        _build_goto,
+        _build_end,
+    ]
+
+    line_object = {}
+
+    for builder in _builders:
+        inserts: BasicLine = builder(tokens)
+        if inserts:
+            line_object |= inserts
+            break
+
+    idx = tokens.index("<original_line>")
+    line_object["text"] = tokens[idx + 1]
+
+    return line_object
+
+
 def _build_remark(tokens: list[str]) -> dict | None:
     if tokens[4] == "<remark>":
         inserts =  {"op_type": "<remark>"}
@@ -37,25 +58,3 @@ def _build_end(tokens: list[str]) -> dict | None:
 
     else:
         return None
-
-
-def _build_line_object(tokens: list[str]) -> BasicLine:
-    _builders = [
-        _build_remark,
-        _build_goto,
-        _build_end,
-    ]
-
-    # line_object = {"op_type": tokens[4]}
-    line_object = {}
-
-    for builder in _builders:
-        inserts: BasicLine = builder(tokens)
-        if inserts:
-            line_object |= inserts
-            break
-
-    idx = tokens.index("<original_line>")
-    line_object["text"] = tokens[idx + 1]
-
-    return line_object
