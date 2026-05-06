@@ -28,10 +28,17 @@ def handle_new_line(self, line: str) -> None:
                 return
 
     tokens = tokenize(line)
-    line_object = build_line_object(tokens)
+
+    if tokens[0] == "<error>":
+        display.append_line("SYNTAX ERROR")
+        if _state["mode"] == "dev":
+            for token in tokens:
+                display.append_line(token)
+        return
 
     if tokens[0] == "<parse_complete>":
         if tokens[1] == "<program_line>":
+            line_object = build_line_object(tokens)
             add_program_line(int(tokens[3]), line_object)
         elif tokens[1] == "<console_command>" and tokens[2] == "<delete_program_line>":
             delete_program_line(int(tokens[4]))
