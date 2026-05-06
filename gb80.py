@@ -1,7 +1,8 @@
 from gb80_terminal import Main, TextDisplay, DevTextDisplay
 from gb80_tokenizer import tokenize
 from gb80_line_builder import build_line_object
-from gb80_line_objects import add_program_line, delete_program_line
+from gb80_line_objects import add_program_line
+from gb80_command_runner import execute_console_command
 from gb80_devtools import DEV_COMMANDS
 
 
@@ -40,12 +41,12 @@ def handle_new_line(self, line: str) -> None:
         if tokens[1] == "<program_line>":
             line_object = build_line_object(tokens)
             add_program_line(int(tokens[3]), line_object)
-        elif tokens[1] == "<console_command>" and tokens[2] == "<delete_program_line>":
-            delete_program_line(int(tokens[4]))
+        elif tokens[1] == "<console_command>":
+            execute_console_command(tokens, display.append_line)
 
-    if _state["mode"] == "dev":
-        for token in tokens:
-            display.append_line(token)
+    # if _state["mode"] == "dev":
+    #     for token in tokens:
+    #         display.append_line(token)
 
 
 Main.on_init = handle_init
