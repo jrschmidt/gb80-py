@@ -58,3 +58,54 @@ def _build_end(tokens: list[str]) -> dict | None:
 
     else:
         return None
+
+
+# Methods to build expression objects to insert into program line objects.
+
+def _build_expression(tokens: list[str]) -> dict | None:
+    match tokens[0] :
+
+        case "<error>" :
+            return None
+
+        case "<numeric_expression>" :
+            return _build_numeric_exp(tokens)
+
+        case "<numeric_literal>" :
+            return _build_num_lit(tokens)
+
+        case "<numeric_variable>" :
+            return _build_num_var(tokens)
+
+        case "<numeric_operation>" :
+            return _build_num_op(tokens)
+
+        case "<numeric_singleton>" :
+            return _build_num_sing(tokens)
+
+        case "<string_expression>" :
+            return _build_string_exp(tokens)
+
+        case "<string_literal>" :
+            return _build_str_lit(tokens)
+
+        case "<string_variable>" :
+            return _build_str_var(tokens)
+
+        case "<string_operation>" :
+            return _build_str_op(tokens)
+
+        case "<string_singleton>" :
+            return _build_str_sing(tokens)
+
+        case "<boolean_expression>" :
+            return _build_boolean_exp(tokens)
+
+        case "<num_bool_expression>" :
+            return _build_num_bool_exp(tokens)
+
+        case "<str_bool_expression>" :
+            return _build_str_bool_exp(tokens)
+
+        case _ :
+            return None

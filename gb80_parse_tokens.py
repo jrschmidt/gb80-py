@@ -19,6 +19,7 @@
 
 parse_tokens = [
     "<raw_string>",
+    "<unparsed_expression>"
     "<parsing>",
     "<parse_complete>",
     "<no_match>",
@@ -26,15 +27,18 @@ parse_tokens = [
     "<undefined>",
     "<remainder_string>",
     "<original_line>",
+
     "<console_command>",
     "<clear>",
     "<list>",
     "<run>",
     "<delete_program_line>"
+
     "<program_line>",
     "<line_number>",
     "<line_number_ref>",
     "<single_space>",
+
     "<remark>",
     "<numeric_assignment>",
     "<string_assignment>",
@@ -48,17 +52,21 @@ parse_tokens = [
     "<receiving_variable>",
     "<semicolon>",
     "<end>",
-    "<numeric_variable>",
-    "<string_variable>",
-    "<string_literal>",
-    "<numeric_literal>",
-    "<unparsed_expression>"
+
     "<numeric_expression>",
     "<numeric_expression_end>",
+    "<numeric_literal>",
+    "<numeric_variable>",
+    "<numeric_operation>",
+    "<numeric_singleton>",
+
     "<string_expression>",
     "<string_expression_end>",
-    "<boolean_expression>",
-    "<boolean_expression_end>",
+    "<string_literal>",
+    "<string_variable>",
+    "<string_operation>",
+    "<string_variable>",
+
     "<concatenate>",
     "<plus>",
     "<minus>",
@@ -67,6 +75,11 @@ parse_tokens = [
     "<power>",
     "<left_paren>",
     "<right_paren>",
+
+    "<boolean_expression>",
+    "<num_bool_expression>",
+    "<str_bool_expression>",
+    "<boolean_expression_end>",
     "<equals>",
     "<not_equal>",
     "<greater_than>",
@@ -77,6 +90,7 @@ parse_tokens = [
     "<string_equals>",
     "<numeric_not_equal>",
     "<string_not_equal>",
+
     "<numeric_print>",
     "<string_print>",
     "<numeric_input>",
