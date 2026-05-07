@@ -20,8 +20,7 @@ def _build_line_object(tokens: list[str]) -> BasicLine:
             line_object |= inserts
             break
 
-    idx = tokens.index("<original_line>")
-    line_object["text"] = tokens[idx + 1]
+    line_object["text"] = string_after("<original_line>", tokens)
 
     return line_object
 
@@ -39,8 +38,7 @@ def _build_goto(tokens: list[str]) -> dict | None:
     if tokens[4] == "<goto>":
         inserts = {"op_type": "<goto>"}
 
-        idx = tokens.index("<line_number_ref>")
-        dest_str = tokens[idx + 1]
+        dest_str = string_after("<line_number_ref>", tokens)
         if dest_str.isdigit():
             dest = int(dest_str)
             inserts["destination"] = dest
@@ -58,6 +56,10 @@ def _build_end(tokens: list[str]) -> dict | None:
 
     else:
         return None
+
+
+def string_after(tag: str, tokens: list[str]) -> str:
+    return tokens[tokens.index(tag) + 1]
 
 
 # Methods to build expression objects to insert into program line objects.

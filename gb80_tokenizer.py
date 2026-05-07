@@ -98,7 +98,7 @@ def _parse_program_line(line: str) -> list[str]:
                 match_only.group(1)
                 ]
 
-    # Check for a valid line number followed by nothing else.
+    # Check for a valid line number followed by something else.
     # This condition will match anything that starts with a line number, followed with
     # something else.
     if not match_only:
@@ -199,8 +199,9 @@ def _parse_string_assignment(tokens: list[str], remainder_string: str) -> list[s
         "<string_assignment>",
         "<string_expression>"
     )
-
 # Used by _parse_numeric_assignment() and _parse_string_assignment().
+# The eq_positions are the indices of acceptable positions for "=", taking into account
+# that string variable names are longer due to the "$" symbol.
 def _parse_assignment(tokens: list[str], remainder_string: str, eq_positions: list[int],
                       var_parser, assignment_token: str, expression_token: str) -> list[str]:
     eq_pos = None
