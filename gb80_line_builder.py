@@ -111,146 +111,93 @@ def _build_expression(tokens: list[str]) -> dict | None:
             return None
 
 
-def _build_numeric_exp(tokens) :
-    if tokens[0] == "<numeric_expression>" :
-        return {
-            "op" : "<numeric_expression>",
-            "completed" : "<no>"
-        }
-
-    else:
-        return None
+def _build_numeric_exp(tokens: list[str]) -> dict | None:
+    return {
+        "op" : "<numeric_expression>",
+        "completed" : "<no>"
+    }
 
 
-def _build_num_lit(tokens) :
-    if tokens[0] == "<numeric_literal>" :
-                return {
-            "op" : "<numeric_literal>",
-            "completed" : "<no>"
-        }
+def _build_num_lit(tokens: list[str]) -> dict | None:
+    return {
+        "op" : "<numeric_literal>",
+        "completed" : "<no>"
+    }
 
 
-    else:
-        return None
+def _build_num_var(tokens: list[str]) -> dict | None:
+    return {
+        "op" : "<numeric_variable>",
+        "completed" : "<no>"
+    }
 
 
-def _build_num_var(tokens) :
-    if tokens[0] == "<numeric_variable>" :
-        return {
-            "op" : "<numeric_variable>",
-            "completed" : "<no>"
-        }
-
-    else:
-        return None
+def _build_num_op(tokens: list[str]) -> dict | None:
+    return {
+        "op" : "<numeric_operation>",
+        "completed" : "<no>"
+    }
 
 
-def _build_num_op(tokens) :
-    if tokens[0] == "<numeric_operation>" :
-        return {
-            "op" : "<numeric_operation>",
-            "completed" : "<no>"
-        }
-
-    else:
-        return None
+def _build_num_sing(tokens: list[str]) -> dict | None:
+    return {
+        "op" : "<numeric_singleton>",
+        "completed" : "<no>"
+    }
 
 
-def _build_num_sing(tokens) :
-    if tokens[0] == "<numeric_singleton>" :
-        return {
-            "op" : "<numeric_singleton>",
-            "completed" : "<no>"
-        }
-
-    else:
-        return None
+def _build_string_exp(tokens: list[str]) -> dict | None:
+    return {
+        "op" : "<string_expression>",
+        "completed" : "<no>"
+    }
 
 
-def _build_string_exp(tokens) :
-    if tokens[0] == "<string_expression>" :
-        return {
-            "op" : "<string_expression>",
-            "completed" : "<no>"
-        }
-
-    else:
-        return None
+def _build_str_lit(tokens: list[str]) -> dict | None:
+    return {
+        "op" : "<string_literal>",
+        "completed" : "<no>"
+    }
 
 
-def _build_str_lit(tokens) :
-    if tokens[0] == "<string_literal>" :
-        return {
-            "op" : "<string_literal>",
-            "completed" : "<no>"
-        }
-
-    else:
-        return None
+def _build_str_var(tokens: list[str]) -> dict | None:
+    return {
+        "op" : "<string_variable>",
+        "completed" : "<no>"
+    }
 
 
-def _build_str_var(tokens) :
-    if tokens[0] == "<string_variable>" :
-        return {
-            "op" : "<string_variable>",
-            "completed" : "<no>"
-        }
-
-    else:
-        return None
+def _build_str_op(tokens: list[str]) -> dict | None:
+    return {
+        "op" : "<string_operation>",
+        "completed" : "<no>"
+    }
 
 
-def _build_str_op(tokens) :
-    if tokens[0] == "<string_operation>" :
-        return {
-            "op" : "<string_operation>",
-            "completed" : "<no>"
-        }
-
-    else:
-        return None
+def _build_str_sing(tokens: list[str]) -> dict | None:
+    return {
+        "op" : "<string_singleton>",
+        "completed" : "<no>"
+    }
 
 
-def _build_str_sing(tokens) :
-    if tokens[0] == "<string_singleton>" :
-        return {
-            "op" : "<string_singleton>",
-            "completed" : "<no>"
-        }
-
-    else:
-        return None
+def _build_boolean_exp(tokens: list[str]) -> dict | None:
+    return {
+        "op" : "<boolean_expression>",
+        "completed" : "<no>"
+    }
 
 
-def _build_boolean_exp(tokens) :
-    if tokens[0] == "<boolean_expression>" :
-        return {
-            "op" : "<boolean_expression>",
-            "completed" : "<no>"
-        }
-
-    else:
-        return None
+def _build_num_bool_exp(tokens: list[str]) -> dict | None:
+    return {
+        "op" : "<num_bool_expression>",
+        "completed" : "<no>"
+    }
 
 
-def _build_num_bool_exp(tokens) :
-    if tokens[0] == "<num_bool_expression>" :
-        return {
-            "op" : "<num_bool_expression>",
-            "completed" : "<no>"
-        }
-
-    else:
-        return None
-
-
-def _build_str_bool_exp(tokens) :
-    if tokens[0] == "<str_bool_expression>" :
-        return {
-            "op" : "<str_bool_expression>",
-            "completed" : "<no>"
-        }
-
-    else:
-        return None
+def _build_str_bool_exp(tokens: list[str]) -> dict | None:
+    return {
+        "op" : "<str_bool_expression>",
+        "completed" : "<no>"
+    }
     

@@ -19,7 +19,7 @@
 
 parse_tokens = [
     "<raw_string>",
-    "<unparsed_expression>"
+    "<unparsed_expression>",
     "<parsing>",
     "<parse_complete>",
     "<no_match>",
@@ -32,7 +32,7 @@ parse_tokens = [
     "<clear>",
     "<list>",
     "<run>",
-    "<delete_program_line>"
+    "<delete_program_line>",
 
     "<program_line>",
     "<line_number>",
@@ -65,7 +65,7 @@ parse_tokens = [
     "<string_literal>",
     "<string_variable>",
     "<string_operation>",
-    "<string_variable>",
+    "<string_singleton>",
 
     "<concatenate>",
     "<plus>",
@@ -85,7 +85,7 @@ parse_tokens = [
     "<greater_than>",
     "<greater_equal>",
     "<lesser_than>",
-    "<lesser_equal>"
+    "<lesser_equal>",
     "<numeric_equals>",
     "<string_equals>",
     "<numeric_not_equal>",
