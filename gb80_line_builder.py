@@ -9,6 +9,7 @@ def _build_line_object(tokens: list[str]) -> BasicLine:
     _builders = [
         _build_remark,
         _build_goto,
+        _build_input,
         _build_end,
     ]
 
@@ -25,7 +26,7 @@ def _build_line_object(tokens: list[str]) -> BasicLine:
     return line_object
 
 
-def _build_remark(tokens: list[str]) -> dict | None:
+def _build_remark(tokens: list[str]) -> BasicLine | None:
     if tokens[4] == "<remark>":
         inserts =  {"op_type": "<remark>"}
         return inserts
@@ -34,7 +35,7 @@ def _build_remark(tokens: list[str]) -> dict | None:
         return None
 
 
-def _build_goto(tokens: list[str]) -> dict | None:
+def _build_goto(tokens: list[str]) -> BasicLine | None:
     if tokens[4] == "<goto>":
         inserts = {"op_type": "<goto>"}
 
@@ -49,7 +50,29 @@ def _build_goto(tokens: list[str]) -> dict | None:
         return None
 
 
-def _build_end(tokens: list[str]) -> dict | None:
+def _build_input(tokens: list[str]) -> BasicLine | None:
+    if tokens[4] != "<input>":
+        return None
+
+    inserts: BasicLine = {"op_type": "<input>"}
+
+    if tokens[5] == "<query_string>":
+        inserts["query_string"] = string_after("<query_string>", tokens)
+
+    var_type = string_after("<receiving_variable>", tokens)
+
+    if var_type == "<numeric_variable>":
+        inserts["op_type"] = "<numeric_input>"
+        inserts["variable"] = string_after("<numeric_variable>", tokens)
+    else:
+        inserts["op_type"] = "<string_input>"
+        var_name = string_after("<string_variable>", tokens)
+        inserts["variable"] = var_name.rstrip("$")
+
+    return inserts
+
+
+def _build_end(tokens: list[str]) -> BasicLine | None:
     if tokens[4] == "<end>":
         inserts =  {"op_type": "<end>"}
         return inserts
@@ -64,7 +87,7 @@ def string_after(tag: str, tokens: list[str]) -> str:
 
 # Methods to build expression objects to insert into program line objects.
 
-def _build_expression(tokens: list[str]) -> dict | None:
+def _build_expression(tokens: list[str]) -> BasicLine | None:
     match tokens[0] :
 
         case "<error>" :
@@ -113,91 +136,91 @@ def _build_expression(tokens: list[str]) -> dict | None:
             return None
 
 
-def _build_numeric_exp(tokens: list[str]) -> dict | None:
+def _build_numeric_exp(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<numeric_expression>",
         "completed" : "<no>"
     }
 
 
-def _build_num_lit(tokens: list[str]) -> dict | None:
+def _build_num_lit(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<numeric_literal>",
         "completed" : "<no>"
     }
 
 
-def _build_num_var(tokens: list[str]) -> dict | None:
+def _build_num_var(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<numeric_variable>",
         "completed" : "<no>"
     }
 
 
-def _build_num_op(tokens: list[str]) -> dict | None:
+def _build_num_op(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<numeric_operation>",
         "completed" : "<no>"
     }
 
 
-def _build_num_sing(tokens: list[str]) -> dict | None:
+def _build_num_sing(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<numeric_singleton>",
         "completed" : "<no>"
     }
 
 
-def _build_string_exp(tokens: list[str]) -> dict | None:
+def _build_string_exp(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<string_expression>",
         "completed" : "<no>"
     }
 
 
-def _build_str_lit(tokens: list[str]) -> dict | None:
+def _build_str_lit(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<string_literal>",
         "completed" : "<no>"
     }
 
 
-def _build_str_var(tokens: list[str]) -> dict | None:
+def _build_str_var(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<string_variable>",
         "completed" : "<no>"
     }
 
 
-def _build_str_op(tokens: list[str]) -> dict | None:
+def _build_str_op(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<string_operation>",
         "completed" : "<no>"
     }
 
 
-def _build_str_sing(tokens: list[str]) -> dict | None:
+def _build_str_sing(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<string_singleton>",
         "completed" : "<no>"
     }
 
 
-def _build_boolean_exp(tokens: list[str]) -> dict | None:
+def _build_boolean_exp(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<boolean_expression>",
         "completed" : "<no>"
     }
 
 
-def _build_num_bool_exp(tokens: list[str]) -> dict | None:
+def _build_num_bool_exp(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<num_bool_expression>",
         "completed" : "<no>"
     }
 
 
-def _build_str_bool_exp(tokens: list[str]) -> dict | None:
+def _build_str_bool_exp(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<str_bool_expression>",
         "completed" : "<no>"
