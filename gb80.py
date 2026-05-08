@@ -3,8 +3,7 @@ from gb80_tokenizer import tokenize
 from gb80_line_builder import build_line_object
 from gb80_line_objects import add_program_line
 from gb80_command_runner import execute_console_command
-from gb80_devtools import DEV_COMMANDS
-
+from gb80_devtools import DEV_COMMANDS, _dev_state
 
 
 def handle_init(self) -> None:
@@ -14,6 +13,7 @@ def handle_init(self) -> None:
 def handle_mode_changed(self, mode: str) -> None:
     display = self.query_one(TextDisplay)
     if mode == "basic":
+        _dev_state["show_tokens"] = False
         display.update_lines([
             "WELCOME TO GRANDPA BASIC 1980",
             "1980 STYLE BASIC LANGUAGE EMULATOR",
@@ -39,6 +39,10 @@ def handle_new_line(self, line: str) -> None:
                 return
 
     tokens = tokenize(line)
+
+    if display._dev_mode and _dev_state["show_tokens"]:
+        for token in tokens:
+            display.append_line(token)
 
     if tokens[0] == "<error>":
         display.append_line("SYNTAX ERROR")

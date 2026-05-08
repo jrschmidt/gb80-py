@@ -9,6 +9,7 @@ def _build_line_object(tokens: list[str]) -> BasicLine:
     _builders = [
         _build_remark,
         _build_goto,
+        _build_print,
         _build_input,
         _build_end,
     ]
@@ -50,6 +51,30 @@ def _build_goto(tokens: list[str]) -> BasicLine | None:
         return None
 
 
+def _build_print(tokens: list[str]) -> BasicLine | None:
+    if tokens[4] != "<print>":
+        return None
+
+    match tokens[5]:
+        case "<string_variable>":
+            inserts: BasicLine = {
+                "op_type": "<string_print>",
+                "variable": string_after("<string_variable>", tokens)
+            }
+        case "<string_literal>":
+            inserts: BasicLine = {
+                "op_type": "<string_print>",
+                "string": string_after("<string_literal>", tokens)
+                }
+        case "<numeric_variable>":
+            inserts: BasicLine = {
+                "op_type": "<numeric_print>",
+                "variable": string_after("<numeric_variable>", tokens)
+                }
+
+    return inserts
+
+
 def _build_input(tokens: list[str]) -> BasicLine | None:
     if tokens[4] != "<input>":
         return None
@@ -85,7 +110,8 @@ def string_after(tag: str, tokens: list[str]) -> str:
     return tokens[tokens.index(tag) + 1]
 
 
-# Methods to build expression objects to insert into program line objects.
+# Methods to build expression objects to insert into program line objects
+# for numeric, string and boolean expressions.
 
 def _build_expression(tokens: list[str]) -> BasicLine | None:
     match tokens[0] :
