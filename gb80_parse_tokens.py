@@ -18,13 +18,9 @@
 
 
 parse_tokens = [
-    "<raw_string>",
-    "<unparsed_expression>",
-    "<parsing>",
     "<parse_complete>",
     "<no_match>",
     "<error>",
-    "<undefined>",
     "<remainder_string>",
     "<original_line>",
 

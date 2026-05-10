@@ -1,3 +1,4 @@
+import re
 from gb80_types import BasicLine
 
 
@@ -233,22 +234,56 @@ def _build_str_sing(tokens: list[str]) -> BasicLine | None:
 
 
 def _build_boolean_exp(tokens: list[str]) -> BasicLine | None:
-    return {
-        "op" : "<boolean_expression>",
-        "completed" : "<no>"
-    }
+    if tokens[0] != "<boolean_expression>" or tokens[-1] != "<boolean_expression_end>":
+        return None
+
+    match tokens[1]:
+        case "<numeric_variable>":
+            return _build_num_bool_exp(tokens)
+        case "<string_variable>":
+            return _build_str_bool_exp(tokens)
+        case _:
+            return None
 
 
 def _build_num_bool_exp(tokens: list[str]) -> BasicLine | None:
-    return {
-        "op" : "<num_bool_expression>",
-        "completed" : "<no>"
+    _comparators = {"<equals>", "<not_equals>", "<greater_than>", "<greater_equal>", "<lesser_than>", "<lesser_equal>"}
+    if tokens[3] not in _comparators:
+        return None
+
+    var_name = string_after("<numeric_variable>", tokens)
+    if not re.fullmatch(r'[A-Z][0-9]?', var_name):
+        return None
+
+    term = _build_num_sing([tokens[5], tokens[6]])
+    if term is None:
+        return None
+
+    inserts: BasicLine = {
+        "comparator": tokens[3],
+        "variable": var_name,
+        "term": term,
     }
+    return inserts
 
 
 def _build_str_bool_exp(tokens: list[str]) -> BasicLine | None:
-    return {
-        "op" : "<str_bool_expression>",
-        "completed" : "<no>"
+    if tokens[3] not in {"<equals>", "<not_equal>"}:
+        return None
+
+    var_name = string_after("<string_variable>", tokens)
+    var_name = var_name.rstrip("$")
+    if not re.fullmatch(r'[A-Z][0-9]?', var_name):
+        return None
+
+    term = _build_str_sing([tokens[5], tokens[6]])
+    if term is None:
+        return None
+
+    inserts: BasicLine = {
+        "comparator": tokens[3],
+        "variable": var_name,
+        "term": term,
     }
+    return inserts
     
