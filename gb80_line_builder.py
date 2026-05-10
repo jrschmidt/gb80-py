@@ -10,6 +10,7 @@ def _build_line_object(tokens: list[str]) -> BasicLine:
     _builders = [
         _build_remark,
         _build_goto,
+        _build_if_then,
         _build_print,
         _build_input,
         _build_end,
@@ -50,6 +51,19 @@ def _build_goto(tokens: list[str]) -> BasicLine | None:
 
     else:
         return None
+
+
+def _build_if_then(tokens: list[str]) -> BasicLine | None:
+    inserts: BasicLine = {"op_type": "<if_then>"}
+
+    expression = _build_boolean_exp(tokens[6:-5])
+    if expression is None:
+        return None
+    inserts["expression"] = expression
+
+    inserts["destination"] = int(string_after("<line_number_ref>", tokens))
+
+    return inserts
 
 
 def _build_print(tokens: list[str]) -> BasicLine | None:
@@ -114,54 +128,6 @@ def string_after(tag: str, tokens: list[str]) -> str:
 # Methods to build expression objects to insert into program line objects
 # for numeric, string and boolean expressions.
 
-def _build_expression(tokens: list[str]) -> BasicLine | None:
-    match tokens[0] :
-
-        case "<error>" :
-            return None
-
-        case "<numeric_expression>" :
-            return _build_numeric_exp(tokens)
-
-        case "<numeric_literal>" :
-            return _build_num_lit(tokens)
-
-        case "<numeric_variable>" :
-            return _build_num_var(tokens)
-
-        case "<numeric_operation>" :
-            return _build_num_op(tokens)
-
-        case "<numeric_singleton>" :
-            return _build_num_sing(tokens)
-
-        case "<string_expression>" :
-            return _build_string_exp(tokens)
-
-        case "<string_literal>" :
-            return _build_str_lit(tokens)
-
-        case "<string_variable>" :
-            return _build_str_var(tokens)
-
-        case "<string_operation>" :
-            return _build_str_op(tokens)
-
-        case "<string_singleton>" :
-            return _build_str_sing(tokens)
-
-        case "<boolean_expression>" :
-            return _build_boolean_exp(tokens)
-
-        case "<num_bool_expression>" :
-            return _build_num_bool_exp(tokens)
-
-        case "<str_bool_expression>" :
-            return _build_str_bool_exp(tokens)
-
-        case _ :
-            return None
-
 
 def _build_numeric_exp(tokens: list[str]) -> BasicLine | None:
     return {
@@ -171,16 +137,22 @@ def _build_numeric_exp(tokens: list[str]) -> BasicLine | None:
 
 
 def _build_num_lit(tokens: list[str]) -> BasicLine | None:
+    try:
+        number = float(tokens[1])
+    except ValueError:
+        return None
     return {
         "op" : "<numeric_literal>",
-        "completed" : "<no>"
+        "number" : number,
     }
 
 
 def _build_num_var(tokens: list[str]) -> BasicLine | None:
+    if not re.fullmatch(r'[A-Z][0-9]?', tokens[1]):
+        return None
     return {
         "op" : "<numeric_variable>",
-        "completed" : "<no>"
+        "variable" : tokens[1],
     }
 
 
@@ -192,10 +164,7 @@ def _build_num_op(tokens: list[str]) -> BasicLine | None:
 
 
 def _build_num_sing(tokens: list[str]) -> BasicLine | None:
-    return {
-        "op" : "<numeric_singleton>",
-        "completed" : "<no>"
-    }
+    return _build_num_var(tokens) or _build_num_lit(tokens)
 
 
 def _build_string_exp(tokens: list[str]) -> BasicLine | None:
@@ -208,14 +177,17 @@ def _build_string_exp(tokens: list[str]) -> BasicLine | None:
 def _build_str_lit(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<string_literal>",
-        "completed" : "<no>"
+        "string" : tokens[1],
     }
 
 
 def _build_str_var(tokens: list[str]) -> BasicLine | None:
+    var_name = tokens[1].rstrip("$")
+    if not re.fullmatch(r'[A-Z][0-9]?', var_name):
+        return None
     return {
         "op" : "<string_variable>",
-        "completed" : "<no>"
+        "variable" : var_name,
     }
 
 
@@ -227,10 +199,7 @@ def _build_str_op(tokens: list[str]) -> BasicLine | None:
 
 
 def _build_str_sing(tokens: list[str]) -> BasicLine | None:
-    return {
-        "op" : "<string_singleton>",
-        "completed" : "<no>"
-    }
+    return _build_str_var(tokens) or _build_str_lit(tokens)
 
 
 def _build_boolean_exp(tokens: list[str]) -> BasicLine | None:
@@ -247,7 +216,15 @@ def _build_boolean_exp(tokens: list[str]) -> BasicLine | None:
 
 
 def _build_num_bool_exp(tokens: list[str]) -> BasicLine | None:
-    _comparators = {"<equals>", "<not_equals>", "<greater_than>", "<greater_equal>", "<lesser_than>", "<lesser_equal>"}
+    _comparators = {
+        "<numeric_equals>",
+        "<numeric_not_equal>",
+        "<greater_than>",
+        "<greater_equal>",
+        "<lesser_than>",
+        "<lesser_equal>"
+    }
+
     if tokens[3] not in _comparators:
         return None
 
@@ -268,7 +245,7 @@ def _build_num_bool_exp(tokens: list[str]) -> BasicLine | None:
 
 
 def _build_str_bool_exp(tokens: list[str]) -> BasicLine | None:
-    if tokens[3] not in {"<equals>", "<not_equal>"}:
+    if tokens[3] not in {"<string_equals>", "<string_not_equal>"}:
         return None
 
     var_name = string_after("<string_variable>", tokens)

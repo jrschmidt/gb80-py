@@ -6,8 +6,8 @@ from gb80_constants import MAX_LINE_NUMBER
 # LOCAL CONSTANTS
 
 _NUMERIC_COMPARATORS = {
-    '=':  '<equals>',
-    '<>': '<not_equal>',
+    '=':  '<numeric_equals>',
+    '<>': '<numeric_not_equal>',
     '>':  '<greater_than>',
     '>=': '<greater_equal>',
     '<':  '<lesser_than>',
@@ -15,8 +15,8 @@ _NUMERIC_COMPARATORS = {
 }
 
 _STRING_COMPARATORS = {
-    '=':  '<equals>',
-    '<>': '<not_equals>',
+    '=':  '<string_equals>',
+    '<>': '<string_not_equal>',
 }
 
 _NUMERIC_OP_TOKENS = {

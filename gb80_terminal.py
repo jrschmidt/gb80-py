@@ -35,8 +35,10 @@ class TextDisplay(Static):
         self.update("\n".join(rendered))
 
     def append_line(self, line: str) -> None:
-        lines = self.lines[1:] if len(self.lines) >= MAX_LINES else self.lines
-        self.update_lines(lines + [line])
+        chunks = [line[i:i+MAX_COLS] for i in range(0, max(len(line), 1), MAX_COLS)] if self._dev_mode else [line]
+        for chunk in chunks:
+            lines = self.lines[1:] if len(self.lines) >= MAX_LINES else self.lines
+            self.update_lines(lines + [chunk])
 
     def append_character(self, char: str) -> None:
         if self.lines and len(self.lines[-1]) >= MAX_COLS:
