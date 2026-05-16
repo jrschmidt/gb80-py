@@ -1,1 +1,1 @@
-type BasicLine = dict[str, str | dict | int | float]
+type BasicLine = dict[str, str | dict | int | float | list]

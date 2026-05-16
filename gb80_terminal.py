@@ -1,3 +1,4 @@
+from rich.markup import escape
 from textual.app import App, ComposeResult
 from textual.widgets import Static, Footer
 from textual.binding import Binding
@@ -29,7 +30,7 @@ class TextDisplay(Static):
         if len(lines) > MAX_LINES or any(len(line) > MAX_COLS for line in lines):
             raise ValueError("Lines in lines[] buffer exceeds maximum.")
         self.lines = lines
-        rendered = list(lines) if self._dev_mode else [line.upper() for line in lines]
+        rendered = [escape(line) for line in (lines if self._dev_mode else [line.upper() for line in lines])]
         if rendered:
             rendered[-1] += "[blink underline] [/]"
         self.update("\n".join(rendered))

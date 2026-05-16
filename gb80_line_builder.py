@@ -192,10 +192,27 @@ def _build_str_var(tokens: list[str]) -> BasicLine | None:
 
 
 def _build_str_op(tokens: list[str]) -> BasicLine | None:
-    return {
-        "op" : "<string_operation>",
-        "completed" : "<no>"
-    }
+    if tokens[0] != "<string_expression>" or tokens[-1] != "<string_expression_end>":
+        return None
+    if "<concatenate>" not in tokens:
+        return None
+
+    terms = []
+    inner = tokens[1:-1]
+    i = 0
+    while i < len(inner):
+        if inner[i] == "<concatenate>":
+            i += 1
+            continue
+        if i + 1 >= len(inner):
+            return None
+        term = _build_str_sing([inner[i], inner[i + 1]])
+        if term is None:
+            return None
+        terms.append(term)
+        i += 2
+
+    return {"op": "<string_concatenation>", "terms": terms}
 
 
 def _build_str_sing(tokens: list[str]) -> BasicLine | None:

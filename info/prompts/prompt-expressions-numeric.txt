@@ -1,0 +1,23 @@
+For numeric op expressions, the allowable operands are
+"<plus>"  ('+')
+"<minus>"  ('-')
+"<times>"  ('*')
+"<divide>"  ('/')
+"<power>"  ('^')
+
+The numeric expression in the line
+500 Z = 3.1416 * R
+
+would be built as
+
+{
+    "op-type": "<times>",
+    "term1": {
+        "op": "<numeric_literal>",
+        "number": 3.1416
+    },
+    "term2": {
+        "op": "numeric_variable>",
+        "variable": "R"
+    }
+}
