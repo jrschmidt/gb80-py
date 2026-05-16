@@ -168,10 +168,11 @@ def _build_num_sing(tokens: list[str]) -> BasicLine | None:
 
 
 def _build_string_exp(tokens: list[str]) -> BasicLine | None:
-    return {
-        "op" : "<string_expression>",
-        "completed" : "<no>"
-    }
+    if tokens[0] != "<string_expression>" or tokens[-1] != "<string_expression_end>":
+        return None
+    if "<concatenate>" not in tokens:
+        return _build_str_sing(tokens[1:-1])
+    return _build_str_op(tokens)
 
 
 def _build_str_lit(tokens: list[str]) -> BasicLine | None:
@@ -189,6 +190,12 @@ def _build_str_var(tokens: list[str]) -> BasicLine | None:
         "op" : "<string_variable>",
         "variable" : var_name,
     }
+
+
+def _build_str_sing(tokens: list[str]) -> BasicLine | None:
+    if len(tokens) != 2:
+        return None
+    return _build_str_var(tokens) or _build_str_lit(tokens)
 
 
 def _build_str_op(tokens: list[str]) -> BasicLine | None:
@@ -213,10 +220,6 @@ def _build_str_op(tokens: list[str]) -> BasicLine | None:
         i += 2
 
     return {"op": "<string_concatenation>", "terms": terms}
-
-
-def _build_str_sing(tokens: list[str]) -> BasicLine | None:
-    return _build_str_var(tokens) or _build_str_lit(tokens)
 
 
 def _build_boolean_exp(tokens: list[str]) -> BasicLine | None:
