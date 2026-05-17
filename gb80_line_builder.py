@@ -9,6 +9,7 @@ def build_line_object(tokens: list[str]) -> BasicLine:
 def _build_line_object(tokens: list[str]) -> BasicLine:
     _builders = [
         _build_remark,
+        _build_string_assignment,
         _build_goto,
         _build_if_then,
         _build_print,
@@ -36,6 +37,26 @@ def _build_remark(tokens: list[str]) -> BasicLine | None:
 
     else:
         return None
+
+
+def _build_string_assignment(tokens: list[str]) -> BasicLine | None:
+    if (
+        tokens[4] != "<string_assignment>" or
+        tokens[5] != "<string_variable>" or
+        tokens[7] != "<equals>" or
+        tokens[8] != "<string_expression>" or
+        tokens[-3] != "<string_expression_end>"
+    ):
+        return None
+
+    var_name = string_after("<string_variable>", tokens).rstrip("$")
+    expression = _build_string_exp(tokens[8:-2])
+
+    return {
+        "op_type": "<string_assignment>",
+        "variable": var_name,
+        "expression": expression,
+    }
 
 
 def _build_goto(tokens: list[str]) -> BasicLine | None:
@@ -119,6 +140,10 @@ def _build_end(tokens: list[str]) -> BasicLine | None:
 
     else:
         return None
+
+
+def string_before(tag: str, tokens: list[str]) -> str:
+    return tokens[tokens.index(tag) - 1]
 
 
 def string_after(tag: str, tokens: list[str]) -> str:

@@ -14,6 +14,23 @@ def _cmd_show_line_numbers(arg: str) -> list[str]:
     return [str(n) for n in numbers] if numbers else ["[NO PROGRAM LINES]"]
 
 
+def _format_line_object(obj, prefix="") -> list[str]:
+    lines = []
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            full_key = f"{prefix}{k}" if prefix else k
+            if isinstance(v, (dict, list)):
+                lines.extend(_format_line_object(v, f"{full_key}."))
+            else:
+                lines.append(f"{full_key}: {v}")
+    elif isinstance(obj, list):
+        for i, item in enumerate(obj):
+            lines.extend(_format_line_object(item, f"{prefix}{i}."))
+    else:
+        lines.append(f"{prefix.rstrip('.')}: {obj}")
+    return lines
+
+
 def _cmd_show_line_object(arg: str) -> list[str]:
     try:
         line_number = int(arg)
@@ -22,7 +39,7 @@ def _cmd_show_line_object(arg: str) -> list[str]:
     line_object = get_line_object(line_number)
     if line_object is None:
         return [f"[NO PROGRAM LINE {line_number}]"]
-    return [f"{k}: {v}" for k, v in line_object.items()]
+    return _format_line_object(line_object)
 
 
 def _cmd_tokens_on(arg: str) -> list[str]:
