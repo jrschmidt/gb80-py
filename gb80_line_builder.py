@@ -158,10 +158,11 @@ def string_after(tag: str, tokens: list[str]) -> str:
 
 
 def _build_numeric_exp(tokens: list[str]) -> BasicLine | None:
-    return {
-        "op" : "<numeric_expression>",
-        "completed" : "<no>"
-    }
+    if tokens[0] != "<numeric_expression>" or tokens[-1] != "<numeric_expression_end>":
+        return None
+    if len(tokens) == 4:
+        return _build_num_sing(tokens[1:-1])
+    return _build_num_op(tokens)
 
 
 def _build_num_lit(tokens: list[str]) -> BasicLine | None:
@@ -192,6 +193,8 @@ def _build_num_op(tokens: list[str]) -> BasicLine | None:
 
 
 def _build_num_sing(tokens: list[str]) -> BasicLine | None:
+    if len(tokens) != 2:
+        return None
     return _build_num_var(tokens) or _build_num_lit(tokens)
 
 
