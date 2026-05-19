@@ -75,6 +75,9 @@ def _build_goto(tokens: list[str]) -> BasicLine | None:
 
 
 def _build_if_then(tokens: list[str]) -> BasicLine | None:
+    if tokens[4] != "<if_then>":
+        return None
+
     inserts: BasicLine = {"op_type": "<if_then>"}
 
     expression = _build_boolean_exp(tokens[6:-5])
