@@ -106,16 +106,16 @@ class Main(App):
             display.append_character(event.character)
             self.input_line += event.character.upper()
 
-    def action_basic_mode(self) -> None:
-        display = self.query_one(TextDisplay)
-        if not display._dev_mode:
-            return
-        display.set_mode("basic")
-        self.on_mode_changed("basic")
-
     def action_dev_mode(self) -> None:
         display = self.query_one(TextDisplay)
         if display._dev_mode:
             return
         display.set_mode("dev")
         self.on_mode_changed("dev")
+
+    def action_basic_mode(self) -> None:
+        display = self.query_one(TextDisplay)
+        if not display._dev_mode:
+            return
+        display.set_mode("basic")
+        self.on_mode_changed("basic")

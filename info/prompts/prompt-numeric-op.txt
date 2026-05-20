@@ -1,0 +1,12 @@
+ The format for numeric op expressions:                                                                                                                     
+                                                                                                                                                             
+  The tokens passed to _build_num_op() will always begin with "<numeric_expression>" and end with "<numeric_expression_end>". Since we have already filtered 
+   out numeric singleton expressions before _build_num_op() is ever invoked, the expressions, if correct and valid, will always be of the form [term] plus   
+  [operand] plus [term], recursively, expressed sequentially in the tokens list and in nested form in the BasicLine object.                                  
+                                                                                                                                                             
+  If it were not for the parentheses, represented by the tokens "<left_paren>" and "<right_paren>", we could simply search for the first operand of the      
+  lowest order available, and divide the tokens at that point into `left`, `right` sub-segments, which we would then evaluate recursively as separate terms. 
+                                                                                                                                                             
+  My proposed algorithm, accounting for the parentheses, is as follows:                                                                                      
+                                                                                                                                                             
+  Initialize variables `left` and `right` of type list[str] = []. Initialize variables `op` and `best_op` to `None`. 

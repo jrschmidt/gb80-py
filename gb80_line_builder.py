@@ -185,6 +185,38 @@ def _build_num_var(tokens: list[str]) -> BasicLine | None:
     }
 
 
+_PRECEDENCE: dict[str, int] = {
+    "<plus>": 3, "<minus>": 3,
+    "<times>": 2, "<divide>": 2,
+    "<power>": 1,
+}
+
+
+def find_splitter(tokens: list[str]) -> int | None:
+    nesting_level = 0
+    best_idx = None
+    best_level = None
+
+    for i, token in enumerate(tokens[1:-1], start=1):
+        if token == "<left_paren>":
+            nesting_level += 1
+        elif token == "<right_paren>":
+            if nesting_level == 0:
+                return None
+            nesting_level -= 1
+        elif nesting_level == 0 and token in _PRECEDENCE:
+            level = _PRECEDENCE[token]
+            if best_level is None or level > best_level:
+                best_idx, best_level = i, level
+            elif level == best_level and token != "<power>":
+                best_idx = i
+
+    if nesting_level != 0:
+        return None
+
+    return best_idx
+
+
 def _build_num_op(tokens: list[str]) -> BasicLine | None:
     return {
         "op" : "<numeric_operation>",
