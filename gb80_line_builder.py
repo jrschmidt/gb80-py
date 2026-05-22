@@ -242,9 +242,27 @@ def prep_op_tokens(tokens: list[str]) -> list[str]:
 
 
 def _build_num_op(tokens: list[str]) -> BasicLine | None:
+    idx = find_splitter(tokens)
+    if idx is None:
+        return None
+
+    operand = tokens[idx]
+
+    left_tokens = prep_op_tokens(tokens[:idx])
+    right_tokens = prep_op_tokens(tokens[idx+1:])
+
+    term1 = _build_numeric_exp(left_tokens)
+    if term1 is None:
+        return None
+
+    term2 = _build_numeric_exp(right_tokens)
+    if term2 is None:
+        return None
+
     return {
-        "op" : "<numeric_operation>",
-        "completed" : "<no>"
+        "operand": operand,
+        "term1": term1,
+        "term2": term2,
     }
 
 
