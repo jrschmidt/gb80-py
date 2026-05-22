@@ -185,7 +185,7 @@ def _build_num_var(tokens: list[str]) -> BasicLine | None:
     }
 
 
-_PRECEDENCE: dict[str, int] = {
+_OP_ORDER: dict[str, int] = {
     "<plus>": 3, "<minus>": 3,
     "<times>": 2, "<divide>": 2,
     "<power>": 1,
@@ -204,8 +204,8 @@ def find_splitter(tokens: list[str]) -> int | None:
             if nesting_level == 0:
                 return None
             nesting_level -= 1
-        elif nesting_level == 0 and token in _PRECEDENCE:
-            level = _PRECEDENCE[token]
+        elif nesting_level == 0 and token in _OP_ORDER:
+            level = _OP_ORDER[token]
             if best_level is None or level > best_level:
                 best_idx, best_level = i, level
             elif level == best_level and token != "<power>":
@@ -215,6 +215,30 @@ def find_splitter(tokens: list[str]) -> int | None:
         return None
 
     return best_idx
+
+
+def prep_op_tokens(tokens: list[str]) -> list[str]:
+    if tokens[0] != "<numeric_expression>":
+        tokens = ["<numeric_expression>"] + tokens
+    if tokens[-1] != "<numeric_expression_end>":
+        tokens = tokens + ["<numeric_expression_end>"]
+
+    while len(tokens) >= 4 and tokens[1] == "<left_paren>" and tokens[-2] == "<right_paren>":
+        nesting_level = 1
+        matched = True
+        for token in tokens[2:-2]:
+            if token == "<left_paren>":
+                nesting_level += 1
+            elif token == "<right_paren>":
+                nesting_level -= 1
+                if nesting_level == 0:
+                    matched = False
+                    break
+        if not matched:
+            break
+        tokens = ["<numeric_expression>"] + tokens[2:-2] + ["<numeric_expression_end>"]
+
+    return tokens
 
 
 def _build_num_op(tokens: list[str]) -> BasicLine | None:
