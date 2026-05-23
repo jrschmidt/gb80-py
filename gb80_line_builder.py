@@ -10,6 +10,7 @@ def _build_line_object(tokens: list[str]) -> BasicLine:
     _builders = [
         _build_remark,
         _build_string_assignment,
+        _build_numeric_assignment,
         _build_goto,
         _build_if_then,
         _build_print,
@@ -37,6 +38,26 @@ def _build_remark(tokens: list[str]) -> BasicLine | None:
 
     else:
         return None
+
+
+def _build_numeric_assignment(tokens: list[str]) -> BasicLine | None:
+    if (
+        tokens[4] != "<numeric_assignment>" or
+        tokens[5] != "<numeric_variable>" or
+        tokens[7] != "<equals>" or
+        tokens[8] != "<numeric_expression>" or
+        tokens[-3] != "<numeric_expression_end>"
+    ):
+        return None
+
+    var_name = string_after("<numeric_variable>", tokens)
+    expression = _build_numeric_exp(tokens[8:-2])
+
+    return {
+        "op_type": "<numeric_assignment>",
+        "variable": var_name,
+        "expression": expression,
+    }
 
 
 def _build_string_assignment(tokens: list[str]) -> BasicLine | None:
@@ -185,6 +206,12 @@ def _build_num_var(tokens: list[str]) -> BasicLine | None:
     }
 
 
+def _build_num_sing(tokens: list[str]) -> BasicLine | None:
+    if len(tokens) != 2:
+        return None
+    return _build_num_var(tokens) or _build_num_lit(tokens)
+
+
 _OP_ORDER: dict[str, int] = {
     "<plus>": 3, "<minus>": 3,
     "<times>": 2, "<divide>": 2,
@@ -264,12 +291,6 @@ def _build_num_op(tokens: list[str]) -> BasicLine | None:
         "term1": term1,
         "term2": term2,
     }
-
-
-def _build_num_sing(tokens: list[str]) -> BasicLine | None:
-    if len(tokens) != 2:
-        return None
-    return _build_num_var(tokens) or _build_num_lit(tokens)
 
 
 def _build_string_exp(tokens: list[str]) -> BasicLine | None:
