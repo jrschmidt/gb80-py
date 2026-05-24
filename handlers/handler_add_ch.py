@@ -19,6 +19,6 @@ def on_key(app, event: Key) -> None:
   # append characters to, if it is not there already.
   if len(magic_line) == 0:
     magic_line = "This is my magic line: "
-    display.append_line(magic_line)
+    display.output_text(magic_line)
 
   display.append_character(event.key)

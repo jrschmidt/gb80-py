@@ -35,7 +35,7 @@ class TextDisplay(Static):
             rendered[-1] += "[blink underline] [/]"
         self.update("\n".join(rendered))
 
-    def append_line(self, line: str) -> None:
+    def output_text(self, line: str) -> None:
         chunks = [line[i:i+MAX_COLS] for i in range(0, max(len(line), 1), MAX_COLS)] if self._dev_mode else [line]
         for chunk in chunks:
             lines = self.lines[1:] if len(self.lines) >= MAX_LINES else self.lines
@@ -97,7 +97,7 @@ class Main(App):
             if self.input_line:
                 self.on_new_line(self.input_line)
                 self.input_line = ""
-                display.append_line("")
+                display.output_text("")
         elif event.key == "backspace":
             if self.input_line:
                 display.update_lines(display.lines[:-1] + [display.lines[-1][:-1]])

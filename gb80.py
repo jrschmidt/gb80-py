@@ -35,17 +35,17 @@ def handle_new_line(self, line: str) -> None:
             if line == cmd_key or line.startswith(cmd_key + " "):
                 arg = line[len(cmd_key):].strip()
                 for output_line in cmd_fn(arg):
-                    display.append_line(output_line)
+                    display.output_text(output_line)
                 return
 
     tokens = tokenize(line)
 
     if display._dev_mode and _dev_state["show_tokens"]:
         for token in tokens:
-            display.append_line(token)
+            display.output_text(token)
 
     if tokens[0] == "<error>":
-        display.append_line("SYNTAX ERROR")
+        display.output_text("SYNTAX ERROR")
         return
 
     if tokens[0] == "<parse_complete>":
@@ -53,7 +53,7 @@ def handle_new_line(self, line: str) -> None:
             line_object = build_line_object(tokens)
             add_program_line(int(tokens[3]), line_object)
         elif tokens[1] == "<console_command>":
-            execute_console_command(tokens, display.append_line)
+            execute_console_command(tokens, display.output_text)
 
 
 Main.on_init = handle_init
