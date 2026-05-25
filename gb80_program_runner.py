@@ -18,14 +18,22 @@ _BASIC_KEYWORDS: dict[str, str] = {
 
 
 def run_program(output_text: Callable) -> None:
-    _run_program(get_line_numbers(), output_text)
+    _run_program(output_text)
 
 
-def _run_program(line_numbers: list[int], output_text: Callable) -> None:
-    for current_line in line_numbers:
-        line_object = get_line_object(current_line)
+def _run_program(output_text: Callable) -> None:
+    line_numbers = get_line_numbers()
+    if not line_numbers:
+        return
+    current_line_number = line_numbers[0]
+    while True:
+        line_object = get_line_object(current_line_number)
         if line_object:
-            execute_program_line(current_line, line_object, output_text)
+            execute_program_line(current_line_number, line_object, output_text)
+        idx = line_numbers.index(current_line_number)
+        if idx + 1 >= len(line_numbers):
+            break
+        current_line_number = line_numbers[idx + 1]
 
 
 def execute_program_line(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
