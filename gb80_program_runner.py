@@ -1,6 +1,13 @@
 from typing import Callable
 from gb80_types import BasicLine
 from gb80_line_objects import get_line_numbers, get_line_object
+from gb80_variable_registry import (
+    start_var_registry,
+    set_numeric_variable,
+    get_numeric_variable,
+    set_string_variable,
+    get_string_variable
+)
 
 
 _BASIC_KEYWORDS: dict[str, str] = {
@@ -22,6 +29,7 @@ def run_program(output_text: Callable) -> None:
 
 
 def _run_program(output_text: Callable) -> None:
+    start_var_registry()
     line_numbers = get_line_numbers()
     if not line_numbers:
         return
