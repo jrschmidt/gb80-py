@@ -51,7 +51,7 @@ def execute_program_line(line_number: int, line_object: BasicLine, output_text: 
         case "<goto>":               _run_goto(line_number, line_object, output_text)
         case "<if_then>":            _run_if_then(line_number, line_object, output_text)
         case "<numeric_assignment>": _run_numeric_assignment(line_number, line_object, output_text)
-        case "<string_assignment>":  _run_string_assignment(line_number, line_object, output_text)
+        case "<string_assignment>":  _run_string_assignment(line_object)
         case "<numeric_input>":      _run_numeric_input(line_number, line_object, output_text)
         case "<string_input>":       _run_string_input(line_number, line_object, output_text)
         case "<numeric_print>":      _run_numeric_print(line_number, line_object, output_text)
@@ -83,10 +83,13 @@ def _run_numeric_assignment(line_number: int, line_object: BasicLine, output_tex
     output_text(f"LINE {line_number} {keyword}")
 
 
-def _run_string_assignment(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
-    op_type = line_object.get("op_type", "")
-    keyword = _BASIC_KEYWORDS.get(op_type, op_type)
-    output_text(f"LINE {line_number} {keyword}")
+def _run_string_assignment(line_object: BasicLine) -> None:
+    if line_object.get("op_type") != "<string_assignment>":
+        return
+    value = evaluate_string_expression(line_object.get("expression"))
+    if value is None:
+        return
+    set_string_variable(line_object.get("variable"), value)
 
 
 def _run_numeric_input(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
@@ -117,3 +120,50 @@ def _run_end(line_number: int, line_object: BasicLine, output_text: Callable) ->
     op_type = line_object.get("op_type", "")
     keyword = _BASIC_KEYWORDS.get(op_type, op_type)
     output_text(f"LINE {line_number} {keyword}")
+
+
+# Methods to evaluate string, numeric, and boolean expressions.
+
+
+def evaluate_string_literal(line_object: BasicLine) -> str | None:
+    if line_object.get("op") != "<string_literal>":
+        return None
+    return line_object.get("string")
+
+
+def evaluate_string_variable(line_object: BasicLine) -> str | None:
+    if line_object.get("op") != "<string_variable>":
+        return None
+    name = line_object.get("variable")
+    return get_string_variable(name)
+
+
+def evaluate_string_singleton(line_object: BasicLine) -> str | None:
+    result = evaluate_string_literal(line_object)
+    if result is not None:
+        return result
+    return evaluate_string_variable(line_object)
+
+
+def evaluate_string_op(line_object: BasicLine) -> str | None:
+    if line_object.get("op") != "<string_concatenation>":
+        return None
+    terms = line_object.get("terms")
+    if not terms:
+        return None
+    parts = []
+    for term in terms:
+        result = evaluate_string_singleton(term)
+        if result is None:
+            return None
+        parts.append(result)
+    return "".join(parts)
+
+
+def evaluate_string_expression(line_object: BasicLine) -> str | None:
+    op = line_object.get("op")
+    if op in ("<string_literal>", "<string_variable>"):
+        return evaluate_string_singleton(line_object)
+    if op == "<string_concatenation>":
+        return evaluate_string_op(line_object)
+    return None
