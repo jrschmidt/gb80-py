@@ -118,17 +118,17 @@ def _build_print(tokens: list[str]) -> BasicLine | None:
     match tokens[5]:
         case "<string_variable>":
             inserts: BasicLine = {
-                "op_type": "<string_print>",
+                "op_type": "<print_string_variable>",
                 "variable": string_after("<string_variable>", tokens).rstrip("$")
             }
         case "<string_literal>":
             inserts: BasicLine = {
-                "op_type": "<string_print>",
+                "op_type": "<print_string_literal>",
                 "string": string_after("<string_literal>", tokens)
                 }
         case "<numeric_variable>":
             inserts: BasicLine = {
-                "op_type": "<numeric_print>",
+                "op_type": "<print_numeric_variable>",
                 "variable": string_after("<numeric_variable>", tokens)
                 }
 

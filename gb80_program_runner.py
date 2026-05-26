@@ -14,8 +14,9 @@ _BASIC_KEYWORDS: dict[str, str] = {
     "<remark>":             "REM",
     "<goto>":               "GOTO",
     "<if_then>":            "IF/THEN",
-    "<string_print>":       "PRINT",
-    "<numeric_print>":      "PRINT",
+    "<print_string_variable>":  "PRINT",
+    "<print_string_literal>":   "PRINT",
+    "<print_numeric_variable>": "PRINT",
     "<string_input>":       "INPUT",
     "<numeric_input>":      "INPUT",
     "<end>":                "END",
@@ -54,8 +55,9 @@ def execute_program_line(line_number: int, line_object: BasicLine, output_text: 
         case "<string_assignment>":  _run_string_assignment(line_object)
         case "<numeric_input>":      _run_numeric_input(line_number, line_object, output_text)
         case "<string_input>":       _run_string_input(line_number, line_object, output_text)
-        case "<numeric_print>":      _run_numeric_print(line_number, line_object, output_text)
-        case "<string_print>":       _run_string_print(line_object, output_text)
+        case "<print_string_variable>":  _run_string_var_print(line_object, output_text)
+        case "<print_string_literal>":   _run_string_lit_print(line_object, output_text)
+        case "<print_numeric_variable>": _run_numeric_print(line_number, line_object, output_text)
         case "<end>":                _run_end(line_number, line_object, output_text)
 
 
@@ -110,13 +112,22 @@ def _run_numeric_print(line_number: int, line_object: BasicLine, output_text: Ca
     output_text(f"LINE {line_number} {keyword}")
 
 
-def _run_string_print(line_object: BasicLine, output_text: Callable) -> None:
-    if line_object.get("op_type") != "<string_print>":
+def _run_string_var_print(line_object: BasicLine, output_text: Callable) -> None:
+    if line_object.get("op_type") != "<print_string_variable>":
         return
     var_name = get_string_variable(line_object.get("variable"))
     if var_name is None:
         return
     output_text(var_name)
+
+
+def _run_string_lit_print(line_object: BasicLine, output_text: Callable) -> None:
+    if line_object.get("op_type") != "<print_string_literal>":
+        return
+    value = line_object.get("string")
+    if value is None:
+        return
+    output_text(value)
 
 
 def _run_end(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
