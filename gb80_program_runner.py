@@ -55,7 +55,7 @@ def execute_program_line(line_number: int, line_object: BasicLine, output_text: 
         case "<numeric_input>":      _run_numeric_input(line_number, line_object, output_text)
         case "<string_input>":       _run_string_input(line_number, line_object, output_text)
         case "<numeric_print>":      _run_numeric_print(line_number, line_object, output_text)
-        case "<string_print>":       _run_string_print(line_number, line_object, output_text)
+        case "<string_print>":       _run_string_print(line_object, output_text)
         case "<end>":                _run_end(line_number, line_object, output_text)
 
 
@@ -110,10 +110,13 @@ def _run_numeric_print(line_number: int, line_object: BasicLine, output_text: Ca
     output_text(f"LINE {line_number} {keyword}")
 
 
-def _run_string_print(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
-    op_type = line_object.get("op_type", "")
-    keyword = _BASIC_KEYWORDS.get(op_type, op_type)
-    output_text(f"LINE {line_number} {keyword}")
+def _run_string_print(line_object: BasicLine, output_text: Callable) -> None:
+    if line_object.get("op_type") != "<string_print>":
+        return
+    var_name = get_string_variable(line_object.get("variable"))
+    if var_name is None:
+        return
+    output_text(var_name)
 
 
 def _run_end(line_number: int, line_object: BasicLine, output_text: Callable) -> None:

@@ -119,7 +119,7 @@ def _build_print(tokens: list[str]) -> BasicLine | None:
         case "<string_variable>":
             inserts: BasicLine = {
                 "op_type": "<string_print>",
-                "variable": string_after("<string_variable>", tokens)
+                "variable": string_after("<string_variable>", tokens).rstrip("$")
             }
         case "<string_literal>":
             inserts: BasicLine = {
