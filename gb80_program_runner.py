@@ -47,8 +47,6 @@ def _run_program(output_text: Callable) -> None:
         _next_line = None
         line_object = get_line_object(current_line_number)
         if line_object:
-            if line_object.get("op_type") == "<end>":
-                break
             execute_program_line(current_line_number, line_object, output_text)
             if _next_line is not None:
                 if _next_line in line_numbers:
@@ -66,6 +64,7 @@ def execute_program_line(line_number: int, line_object: BasicLine, output_text: 
     match op_type:
         case "<remark>":             _run_remark(line_number, line_object, output_text)
         case "<goto>":               _run_goto(line_object)
+        case "<end>":                _run_end(line_object)
         case "<if_then>":            _run_if_then(line_number, line_object, output_text)
         case "<numeric_assignment>": _run_numeric_assignment(line_object)
         case "<string_assignment>":  _run_string_assignment(line_object)
@@ -151,6 +150,12 @@ def _run_string_lit_print(line_object: BasicLine, output_text: Callable) -> None
     if value is None:
         return
     output_text(value)
+
+
+def _run_end(line_object: BasicLine) -> None:
+    if line_object.get("op_type") != "<end>":
+        return
+    _set_next_line(-1)
 
 
 # Methods to evaluate string, numeric, and boolean expressions.
