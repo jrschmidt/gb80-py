@@ -253,3 +253,50 @@ def evaluate_numeric_expression(line_object: BasicLine) -> float | None:
     if line_object.get("operand") in ("<plus>", "<minus>", "<times>", "<divide>", "<power>"):
         return evaluate_numeric_op(line_object)
     return None
+
+
+def evaluate_str_boolean_exp(line_object: BasicLine) -> bool | None:
+    comparator = line_object.get("comparator")
+    if comparator not in ("<string_equals>", "<string_not_equal>"):
+        return None
+    var_value = get_string_variable(line_object.get("variable"))
+    if var_value is None:
+        return None
+    term_value = evaluate_string_singleton(line_object.get("term"))
+    if term_value is None:
+        return None
+    match comparator:
+        case "<string_equals>":    return var_value == term_value
+        case "<string_not_equal>": return var_value != term_value
+    return None
+
+
+def evaluate_num_boolean_exp(line_object: BasicLine) -> bool | None:
+    comparator = line_object.get("comparator")
+    if comparator not in ("<numeric_equals>", "<numeric_not_equal>", "<lesser_than>",
+                          "<lesser_equal>", "<greater_than>", "<greater_equal>"):
+        return None
+    var_value = get_numeric_variable(line_object.get("variable"))
+    if var_value is None:
+        return None
+    term_value = evaluate_numeric_singleton(line_object.get("term"))
+    if term_value is None:
+        return None
+    match comparator:
+        case "<numeric_equals>":    return var_value == term_value
+        case "<numeric_not_equal>": return var_value != term_value
+        case "<lesser_than>":       return var_value <  term_value
+        case "<lesser_equal>":      return var_value <= term_value
+        case "<greater_than>":      return var_value >  term_value
+        case "<greater_equal>":     return var_value >= term_value
+    return None
+
+
+def evaluate_boolean_expression(line_object: BasicLine) -> bool | None:
+    comparator = line_object.get("comparator")
+    if comparator in ("<string_equals>", "<string_not_equal>"):
+        return evaluate_str_boolean_exp(line_object)
+    if comparator in ("<numeric_equals>", "<numeric_not_equal>", "<lesser_than>",
+                      "<lesser_equal>", "<greater_than>", "<greater_equal>"):
+        return evaluate_num_boolean_exp(line_object)
+    return None
