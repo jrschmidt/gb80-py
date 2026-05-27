@@ -59,7 +59,7 @@ def execute_program_line(line_number: int, line_object: BasicLine, output_text: 
         case "<string_input>":       _run_string_input(line_number, line_object, output_text)
         case "<print_string_variable>":  _run_string_var_print(line_object, output_text)
         case "<print_string_literal>":   _run_string_lit_print(line_object, output_text)
-        case "<print_numeric_variable>": _run_numeric_print(line_number, line_object, output_text)
+        case "<print_numeric_variable>": _run_numeric_print(line_object, output_text)
 
 
 def _run_remark(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
@@ -110,10 +110,13 @@ def _run_string_input(line_number: int, line_object: BasicLine, output_text: Cal
     output_text(f"LINE {line_number} {keyword}")
 
 
-def _run_numeric_print(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
-    op_type = line_object.get("op_type", "")
-    keyword = _BASIC_KEYWORDS.get(op_type, op_type)
-    output_text(f"LINE {line_number} {keyword}")
+def _run_numeric_print(line_object: BasicLine, output_text: Callable) -> None:
+    if line_object.get("op_type") != "<print_numeric_variable>":
+        return
+    value = get_numeric_variable(line_object.get("variable"))
+    if value is None:
+        return
+    output_text(str(int(value)) if value == int(value) else str(value))
 
 
 def _run_string_var_print(line_object: BasicLine, output_text: Callable) -> None:
