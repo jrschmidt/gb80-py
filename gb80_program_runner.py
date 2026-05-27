@@ -25,22 +25,36 @@ _BASIC_KEYWORDS: dict[str, str] = {
 }
 
 
+_next_line: int | None = None
+
+def _set_next_line(n: int) -> None:
+    global _next_line
+    _next_line = n
+
+
 def run_program(output_text: Callable) -> None:
     _run_program(output_text)
 
 
 def _run_program(output_text: Callable) -> None:
+    global _next_line
     start_var_registry()
     line_numbers = get_line_numbers()
     if not line_numbers:
         return
     current_line_number = line_numbers[0]
     while True:
+        _next_line = None
         line_object = get_line_object(current_line_number)
         if line_object:
             if line_object.get("op_type") == "<end>":
                 break
             execute_program_line(current_line_number, line_object, output_text)
+            if _next_line is not None:
+                if _next_line in line_numbers:
+                    current_line_number = _next_line
+                    continue
+                break
         idx = line_numbers.index(current_line_number)
         if idx + 1 >= len(line_numbers):
             break
@@ -51,7 +65,7 @@ def execute_program_line(line_number: int, line_object: BasicLine, output_text: 
     op_type = line_object.get("op_type", "")
     match op_type:
         case "<remark>":             _run_remark(line_number, line_object, output_text)
-        case "<goto>":               _run_goto(line_number, line_object, output_text)
+        case "<goto>":               _run_goto(line_object)
         case "<if_then>":            _run_if_then(line_number, line_object, output_text)
         case "<numeric_assignment>": _run_numeric_assignment(line_object)
         case "<string_assignment>":  _run_string_assignment(line_object)
@@ -68,10 +82,12 @@ def _run_remark(line_number: int, line_object: BasicLine, output_text: Callable)
     output_text(f"LINE {line_number} {keyword}")
 
 
-def _run_goto(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
-    op_type = line_object.get("op_type", "")
-    keyword = _BASIC_KEYWORDS.get(op_type, op_type)
-    output_text(f"LINE {line_number} {keyword}")
+def _run_goto(line_object: BasicLine) -> None:
+    if line_object.get("op_type") != "<goto>":
+        return
+    destination = line_object.get("destination")
+    if destination is not None:
+        _set_next_line(destination)
 
 
 def _run_if_then(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
