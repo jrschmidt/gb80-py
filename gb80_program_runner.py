@@ -38,6 +38,8 @@ def _run_program(output_text: Callable) -> None:
     while True:
         line_object = get_line_object(current_line_number)
         if line_object:
+            if line_object.get("op_type") == "<end>":
+                break
             execute_program_line(current_line_number, line_object, output_text)
         idx = line_numbers.index(current_line_number)
         if idx + 1 >= len(line_numbers):
@@ -58,7 +60,6 @@ def execute_program_line(line_number: int, line_object: BasicLine, output_text: 
         case "<print_string_variable>":  _run_string_var_print(line_object, output_text)
         case "<print_string_literal>":   _run_string_lit_print(line_object, output_text)
         case "<print_numeric_variable>": _run_numeric_print(line_number, line_object, output_text)
-        case "<end>":                _run_end(line_number, line_object, output_text)
 
 
 def _run_remark(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
@@ -128,12 +129,6 @@ def _run_string_lit_print(line_object: BasicLine, output_text: Callable) -> None
     if value is None:
         return
     output_text(value)
-
-
-def _run_end(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
-    op_type = line_object.get("op_type", "")
-    keyword = _BASIC_KEYWORDS.get(op_type, op_type)
-    output_text(f"LINE {line_number} {keyword}")
 
 
 # Methods to evaluate string, numeric, and boolean expressions.
