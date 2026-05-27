@@ -65,7 +65,7 @@ def execute_program_line(line_number: int, line_object: BasicLine, output_text: 
         case "<remark>":             _run_remark(line_number, line_object, output_text)
         case "<goto>":               _run_goto(line_object)
         case "<end>":                _run_end(line_object)
-        case "<if_then>":            _run_if_then(line_number, line_object, output_text)
+        case "<if_then>":            _run_if_then(line_object)
         case "<numeric_assignment>": _run_numeric_assignment(line_object)
         case "<string_assignment>":  _run_string_assignment(line_object)
         case "<numeric_input>":      _run_numeric_input(line_number, line_object, output_text)
@@ -89,10 +89,14 @@ def _run_goto(line_object: BasicLine) -> None:
         _set_next_line(destination)
 
 
-def _run_if_then(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
-    op_type = line_object.get("op_type", "")
-    keyword = _BASIC_KEYWORDS.get(op_type, op_type)
-    output_text(f"LINE {line_number} {keyword}")
+def _run_if_then(line_object: BasicLine) -> None:
+    if line_object.get("op_type") != "<if_then>":
+        return
+    result = evaluate_boolean_expression(line_object.get("expression"))
+    if result:
+        destination = line_object.get("destination")
+        if destination is not None:
+            _set_next_line(destination)
 
 
 def _run_numeric_assignment(line_object: BasicLine) -> None:
