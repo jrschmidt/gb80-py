@@ -53,7 +53,7 @@ def execute_program_line(line_number: int, line_object: BasicLine, output_text: 
         case "<remark>":             _run_remark(line_number, line_object, output_text)
         case "<goto>":               _run_goto(line_number, line_object, output_text)
         case "<if_then>":            _run_if_then(line_number, line_object, output_text)
-        case "<numeric_assignment>": _run_numeric_assignment(line_number, line_object, output_text)
+        case "<numeric_assignment>": _run_numeric_assignment(line_object)
         case "<string_assignment>":  _run_string_assignment(line_object)
         case "<numeric_input>":      _run_numeric_input(line_number, line_object, output_text)
         case "<string_input>":       _run_string_input(line_number, line_object, output_text)
@@ -80,10 +80,13 @@ def _run_if_then(line_number: int, line_object: BasicLine, output_text: Callable
     output_text(f"LINE {line_number} {keyword}")
 
 
-def _run_numeric_assignment(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
-    op_type = line_object.get("op_type", "")
-    keyword = _BASIC_KEYWORDS.get(op_type, op_type)
-    output_text(f"LINE {line_number} {keyword}")
+def _run_numeric_assignment(line_object: BasicLine) -> None:
+    if line_object.get("op_type") != "<numeric_assignment>":
+        return
+    value = evaluate_numeric_expression(line_object.get("expression"))
+    if value is None:
+        return
+    set_numeric_variable(line_object.get("variable"), value)
 
 
 def _run_string_assignment(line_object: BasicLine) -> None:
@@ -175,4 +178,54 @@ def evaluate_string_expression(line_object: BasicLine) -> str | None:
         return evaluate_string_singleton(line_object)
     if op == "<string_concatenation>":
         return evaluate_string_op(line_object)
+    return None
+
+
+def evaluate_numeric_literal(line_object: BasicLine) -> float | None:
+    if line_object.get("op") != "<numeric_literal>":
+        return None
+    return line_object.get("number")
+
+
+def evaluate_numeric_variable(line_object: BasicLine) -> float | None:
+    if line_object.get("op") != "<numeric_variable>":
+        return None
+    name = line_object.get("variable")
+    return get_numeric_variable(name)
+
+
+def evaluate_numeric_singleton(line_object: BasicLine) -> float | None:
+    result = evaluate_numeric_literal(line_object)
+    if result is not None:
+        return result
+    return evaluate_numeric_variable(line_object)
+
+
+def evaluate_numeric_op(line_object: BasicLine) -> float | None:
+    operand = line_object.get("operand")
+    if operand not in ("<plus>", "<minus>", "<times>", "<divide>", "<power>"):
+        return None
+    term1 = line_object.get("term1")
+    term2 = line_object.get("term2")
+    if term1 is None or term2 is None:
+        return None
+    val1 = evaluate_numeric_expression(term1)
+    val2 = evaluate_numeric_expression(term2)
+    if val1 is None or val2 is None:
+        return None
+    match operand:
+        case "<plus>":    return val1 + val2
+        case "<minus>":   return val1 - val2
+        case "<times>":   return val1 * val2
+        case "<divide>":  return None if val2 == 0 else val1 / val2
+        case "<power>":   return val1 ** val2
+    return None
+
+
+def evaluate_numeric_expression(line_object: BasicLine) -> float | None:
+    op = line_object.get("op")
+    if op in ("<numeric_literal>", "<numeric_variable>"):
+        return evaluate_numeric_singleton(line_object)
+    if line_object.get("operand") in ("<plus>", "<minus>", "<times>", "<divide>", "<power>"):
+        return evaluate_numeric_op(line_object)
     return None
