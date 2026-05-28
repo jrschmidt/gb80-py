@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Generator
 from gb80_program_runner import run_program
 from gb80_line_objects import (
     clear_all_program_lines,
@@ -35,5 +35,32 @@ def execute_clear_command() -> None:
     clear_all_program_lines()
 
 
+_program_gen: Generator | None = None
+
+
 def execute_run_command(output_text: Callable) -> None:
-    run_program(output_text)
+    global _program_gen
+    _program_gen = run_program(output_text)
+    _advance_program()
+
+
+def _advance_program() -> None:
+    global _program_gen
+    try:
+        next(_program_gen)
+    except StopIteration:
+        _program_gen = None
+
+
+def resume_with_input(value: str) -> None:
+    global _program_gen
+    if _program_gen is None:
+        return
+    try:
+        _program_gen.send(value)
+    except StopIteration:
+        _program_gen = None
+
+
+def is_waiting_for_input() -> bool:
+    return _program_gen is not None

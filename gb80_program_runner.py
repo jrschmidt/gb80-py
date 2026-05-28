@@ -26,18 +26,23 @@ _BASIC_KEYWORDS: dict[str, str] = {
 
 
 _next_line: int | None = None
+_input_request: dict | None = None
 
 def _set_next_line(n: int) -> None:
     global _next_line
     _next_line = n
 
+def _set_input_request(var_type: str, variable: str, query: str | None) -> None:
+    global _input_request
+    _input_request = {"type": var_type, "variable": variable, "query": query}
 
-def run_program(output_text: Callable) -> None:
-    _run_program(output_text)
+
+def run_program(output_text: Callable):
+    return _run_program(output_text)
 
 
-def _run_program(output_text: Callable) -> None:
-    global _next_line
+def _run_program(output_text: Callable):
+    global _next_line, _input_request
     start_var_registry()
     line_numbers = get_line_numbers()
     if not line_numbers:
@@ -45,9 +50,15 @@ def _run_program(output_text: Callable) -> None:
     current_line_number = line_numbers[0]
     while True:
         _next_line = None
+        _input_request = None
         line_object = get_line_object(current_line_number)
         if line_object:
             execute_program_line(current_line_number, line_object, output_text)
+            if _input_request is not None:
+                req = _input_request
+                user_input = yield req
+                if req["type"] == "string":
+                    set_string_variable(req["variable"], user_input)
             if _next_line is not None:
                 if _next_line in line_numbers:
                     current_line_number = _next_line
@@ -69,16 +80,14 @@ def execute_program_line(line_number: int, line_object: BasicLine, output_text: 
         case "<numeric_assignment>": _run_numeric_assignment(line_object)
         case "<string_assignment>":  _run_string_assignment(line_object)
         case "<numeric_input>":      _run_numeric_input(line_number, line_object, output_text)
-        case "<string_input>":       _run_string_input(line_number, line_object, output_text)
+        case "<string_input>":       _run_string_input(line_object, output_text)
         case "<print_string_variable>":  _run_string_var_print(line_object, output_text)
         case "<print_string_literal>":   _run_string_lit_print(line_object, output_text)
         case "<print_numeric_variable>": _run_numeric_print(line_object, output_text)
 
 
-def _run_remark(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
-    op_type = line_object.get("op_type", "")
-    keyword = _BASIC_KEYWORDS.get(op_type, op_type)
-    output_text(f"LINE {line_number} {keyword}")
+def _run_remark(line_object: BasicLine) -> None:
+    pass
 
 
 def _run_goto(line_object: BasicLine) -> None:
@@ -123,10 +132,13 @@ def _run_numeric_input(line_number: int, line_object: BasicLine, output_text: Ca
     output_text(f"LINE {line_number} {keyword}")
 
 
-def _run_string_input(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
-    op_type = line_object.get("op_type", "")
-    keyword = _BASIC_KEYWORDS.get(op_type, op_type)
-    output_text(f"LINE {line_number} {keyword}")
+def _run_string_input(line_object: BasicLine, output_text: Callable) -> None:
+    if line_object.get("op_type") != "<string_input>":
+        return
+    query = line_object.get("query_string")
+    if query:
+        output_text(query)
+    _set_input_request("string", line_object.get("variable"), query)
 
 
 def _run_numeric_print(line_object: BasicLine, output_text: Callable) -> None:

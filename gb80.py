@@ -2,7 +2,7 @@ from gb80_terminal import Main, TextDisplay
 from gb80_tokenizer import tokenize
 from gb80_line_builder import build_line_object
 from gb80_line_objects import add_program_line
-from gb80_command_runner import execute_console_command
+from gb80_command_runner import execute_console_command, is_waiting_for_input, resume_with_input
 from gb80_devtools import DEV_COMMANDS, _dev_state
 
 
@@ -29,6 +29,10 @@ def handle_mode_changed(self, mode: str) -> None:
 
 def handle_new_line(self, line: str) -> None:
     display = self.query_one(TextDisplay)
+
+    if is_waiting_for_input():
+        resume_with_input(line)
+        return
 
     if display._dev_mode:
         for cmd_key, cmd_fn in DEV_COMMANDS.items():
