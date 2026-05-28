@@ -421,6 +421,13 @@ def _parse_numeric_expression(expr_string: str) -> list[str]:
             s = s[m.end():]
             continue
 
+        if result[-1] in ('<numeric_expression>', '<plus>', '<minus>', '<times>', '<divide>', '<power>', '<left_paren>'):
+            m = re.match(r'^(-\d+(?:\.\d+)?)', s)
+            if m:
+                result.extend(['<numeric_literal>', m.group(1)])
+                s = s[m.end():]
+                continue
+
         m = re.match(r'^(\d+(?:\.\d+)?)', s)
         if m:
             result.extend(['<numeric_literal>', m.group(1)])

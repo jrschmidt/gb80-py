@@ -271,6 +271,8 @@ def evaluate_numeric_op(line_object: BasicLine) -> float | None:
 
 
 def evaluate_numeric_expression(line_object: BasicLine) -> float | None:
+    if line_object is None:
+        return None
     op = line_object.get("op")
     if op in ("<numeric_literal>", "<numeric_variable>"):
         return evaluate_numeric_singleton(line_object)
