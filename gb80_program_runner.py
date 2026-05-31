@@ -10,21 +10,6 @@ from gb80_variable_registry import (
 )
 
 
-_BASIC_KEYWORDS: dict[str, str] = {
-    "<remark>":             "REM",
-    "<goto>":               "GOTO",
-    "<if_then>":            "IF/THEN",
-    "<print_string_variable>":  "PRINT",
-    "<print_string_literal>":   "PRINT",
-    "<print_numeric_variable>": "PRINT",
-    "<string_input>":       "INPUT",
-    "<numeric_input>":      "INPUT",
-    "<end>":                "END",
-    "<string_assignment>":  "--String Assignment--",
-    "<numeric_assignment>": "--Numeric Assignment--",
-}
-
-
 _next_line: int | None = None
 _input_request: dict | None = None
 
@@ -75,10 +60,10 @@ def _run_program(output_text: Callable):
         current_line_number = line_numbers[idx + 1]
 
 
-def execute_program_line(line_number: int, line_object: BasicLine, output_text: Callable) -> None:
+def execute_program_line(line_object: BasicLine, output_text: Callable) -> None:
     op_type = line_object.get("op_type", "")
     match op_type:
-        case "<remark>":             _run_remark(line_number, line_object, output_text)
+        case "<remark>":             _run_remark(line_object, output_text)
         case "<goto>":               _run_goto(line_object)
         case "<end>":                _run_end(line_object)
         case "<if_then>":            _run_if_then(line_object)
