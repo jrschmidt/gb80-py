@@ -1,4 +1,4 @@
-from typing import Callable, Generator
+from typing import Any, Callable, Generator, cast
 from gb80_program_runner import run_program
 from gb80_line_objects import (
     clear_all_program_lines,
@@ -27,7 +27,9 @@ def _execute_console_command(tokens: list[str], output_text: Callable) -> None:
 def execute_list_command(output_text: Callable) -> None:
     for line_number in get_line_numbers():
         line = get_line_object(line_number)
-        text = line["text"]
+        if line is None:
+            continue
+        text = cast(str, line["text"])
         output_text(text)
 
 
@@ -35,7 +37,7 @@ def execute_clear_command() -> None:
     clear_all_program_lines()
 
 
-_program_gen: Generator | None = None
+_program_gen: Generator[Any, Any, Any] | None = None
 
 
 def execute_run_command(output_text: Callable) -> None:
@@ -46,6 +48,8 @@ def execute_run_command(output_text: Callable) -> None:
 
 def _advance_program() -> None:
     global _program_gen
+    if _program_gen is None:
+        return
     try:
         next(_program_gen)
     except StopIteration:

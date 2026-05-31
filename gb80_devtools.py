@@ -1,4 +1,5 @@
-from typing import Callable
+from typing import Callable, cast
+from gb80_types import BasicLine
 from gb80_line_objects import get_line_numbers, get_line_object
 
 
@@ -46,7 +47,7 @@ def _cmd_list(arg: str) -> list[str]:
     numbers = get_line_numbers()
     if not numbers:
         return ["[no program lines]"]
-    return [get_line_object(n)["text"] for n in numbers]
+    return [cast(str, cast(BasicLine, get_line_object(n))["text"]) for n in numbers]
 
 
 def _cmd_tokens_on(arg: str) -> list[str]:

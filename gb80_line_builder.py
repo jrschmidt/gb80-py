@@ -18,10 +18,10 @@ def _build_line_object(tokens: list[str]) -> BasicLine:
         _build_end,
     ]
 
-    line_object = {}
+    line_object: BasicLine = {}
 
     for builder in _builders:
-        inserts: BasicLine = builder(tokens)
+        inserts = builder(tokens)
         if inserts:
             line_object |= inserts
             break
@@ -33,7 +33,7 @@ def _build_line_object(tokens: list[str]) -> BasicLine:
 
 def _build_remark(tokens: list[str]) -> BasicLine | None:
     if tokens[4] == "<remark>":
-        inserts =  {"op_type": "<remark>"}
+        inserts: BasicLine = {"op_type": "<remark>"}
         return inserts
 
     else:
@@ -52,6 +52,8 @@ def _build_numeric_assignment(tokens: list[str]) -> BasicLine | None:
 
     var_name = string_after("<numeric_variable>", tokens)
     expression = _build_numeric_exp(tokens[8:-2])
+    if expression is None:
+        return None
 
     return {
         "op_type": "<numeric_assignment>",
@@ -72,6 +74,8 @@ def _build_string_assignment(tokens: list[str]) -> BasicLine | None:
 
     var_name = string_after("<string_variable>", tokens).rstrip("$")
     expression = _build_string_exp(tokens[8:-2])
+    if expression is None:
+        return None
 
     return {
         "op_type": "<string_assignment>",
@@ -82,7 +86,7 @@ def _build_string_assignment(tokens: list[str]) -> BasicLine | None:
 
 def _build_goto(tokens: list[str]) -> BasicLine | None:
     if tokens[4] == "<goto>":
-        inserts = {"op_type": "<goto>"}
+        inserts: BasicLine = {"op_type": "<goto>"}
 
         dest_str = string_after("<line_number_ref>", tokens)
         if dest_str.isdigit():
@@ -115,22 +119,23 @@ def _build_print(tokens: list[str]) -> BasicLine | None:
     if tokens[4] != "<print>":
         return None
 
+    inserts: BasicLine = {}
     match tokens[5]:
         case "<string_variable>":
-            inserts: BasicLine = {
+            inserts = {
                 "op_type": "<print_string_variable>",
                 "variable": string_after("<string_variable>", tokens).rstrip("$")
             }
         case "<string_literal>":
-            inserts: BasicLine = {
+            inserts = {
                 "op_type": "<print_string_literal>",
                 "string": string_after("<string_literal>", tokens)
-                }
+            }
         case "<numeric_variable>":
-            inserts: BasicLine = {
+            inserts = {
                 "op_type": "<print_numeric_variable>",
                 "variable": string_after("<numeric_variable>", tokens)
-                }
+            }
 
     return inserts
 
@@ -159,7 +164,7 @@ def _build_input(tokens: list[str]) -> BasicLine | None:
 
 def _build_end(tokens: list[str]) -> BasicLine | None:
     if tokens[4] == "<end>":
-        inserts =  {"op_type": "<end>"}
+        inserts: BasicLine = {"op_type": "<end>"}
         return inserts
 
     else:

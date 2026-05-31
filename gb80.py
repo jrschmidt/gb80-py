@@ -60,9 +60,9 @@ def handle_new_line(self, line: str) -> None:
             execute_console_command(tokens, display.output_text)
 
 
-Main.on_init = handle_init
-Main.on_new_line = handle_new_line
-Main.on_mode_changed = handle_mode_changed
+Main.on_init = handle_init  # type: ignore[method-assign]
+Main.on_new_line = handle_new_line  # type: ignore[method-assign]
+Main.on_mode_changed = handle_mode_changed  # type: ignore[method-assign]
 
 if __name__ == "__main__":
     Main().run()

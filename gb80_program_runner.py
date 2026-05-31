@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, cast
 from gb80_types import BasicLine
 from gb80_line_objects import get_line_numbers, get_line_object
 from gb80_variable_registry import (
@@ -38,7 +38,7 @@ def _run_program(output_text: Callable):
         _input_request = None
         line_object = get_line_object(current_line_number)
         if line_object:
-            execute_program_line(current_line_number, line_object, output_text)
+            execute_program_line(line_object, output_text)
             if _input_request is not None:
                 req = _input_request
                 user_input = yield req
@@ -63,7 +63,7 @@ def _run_program(output_text: Callable):
 def execute_program_line(line_object: BasicLine, output_text: Callable) -> None:
     op_type = line_object.get("op_type", "")
     match op_type:
-        case "<remark>":             _run_remark(line_object, output_text)
+        case "<remark>":             _run_remark(line_object)
         case "<goto>":               _run_goto(line_object)
         case "<end>":                _run_end(line_object)
         case "<if_then>":            _run_if_then(line_object)
@@ -85,59 +85,59 @@ def _run_goto(line_object: BasicLine) -> None:
         return
     destination = line_object.get("destination")
     if destination is not None:
-        _set_next_line(destination)
+        _set_next_line(cast(int, destination))
 
 
 def _run_if_then(line_object: BasicLine) -> None:
     if line_object.get("op_type") != "<if_then>":
         return
-    result = evaluate_boolean_expression(line_object.get("expression"))
+    result = evaluate_boolean_expression(cast(BasicLine, line_object.get("expression")))
     if result:
         destination = line_object.get("destination")
         if destination is not None:
-            _set_next_line(destination)
+            _set_next_line(cast(int, destination))
 
 
 def _run_numeric_assignment(line_object: BasicLine) -> None:
     if line_object.get("op_type") != "<numeric_assignment>":
         return
-    value = evaluate_numeric_expression(line_object.get("expression"))
+    value = evaluate_numeric_expression(cast(BasicLine, line_object.get("expression")))
     if value is None:
         return
-    set_numeric_variable(line_object.get("variable"), value)
+    set_numeric_variable(cast(str, line_object.get("variable")), value)
 
 
 def _run_string_assignment(line_object: BasicLine) -> None:
     if line_object.get("op_type") != "<string_assignment>":
         return
-    value = evaluate_string_expression(line_object.get("expression"))
+    value = evaluate_string_expression(cast(BasicLine, line_object.get("expression")))
     if value is None:
         return
-    set_string_variable(line_object.get("variable"), value)
+    set_string_variable(cast(str, line_object.get("variable")), value)
 
 
 def _run_numeric_input(line_object: BasicLine, output_text: Callable) -> None:
     if line_object.get("op_type") != "<numeric_input>":
         return
-    query = line_object.get("query_string")
+    query = cast(str | None, line_object.get("query_string"))
     if query:
         output_text(query)
-    _set_input_request("numeric", line_object.get("variable"), query)
+    _set_input_request("numeric", cast(str, line_object.get("variable")), query)
 
 
 def _run_string_input(line_object: BasicLine, output_text: Callable) -> None:
     if line_object.get("op_type") != "<string_input>":
         return
-    query = line_object.get("query_string")
+    query = cast(str | None, line_object.get("query_string"))
     if query:
         output_text(query)
-    _set_input_request("string", line_object.get("variable"), query)
+    _set_input_request("string", cast(str, line_object.get("variable")), query)
 
 
 def _run_numeric_print(line_object: BasicLine, output_text: Callable) -> None:
     if line_object.get("op_type") != "<print_numeric_variable>":
         return
-    value = get_numeric_variable(line_object.get("variable"))
+    value = get_numeric_variable(cast(str, line_object.get("variable")))
     if value is None:
         return
     output_text(str(int(value)) if value == int(value) else str(value))
@@ -146,7 +146,7 @@ def _run_numeric_print(line_object: BasicLine, output_text: Callable) -> None:
 def _run_string_var_print(line_object: BasicLine, output_text: Callable) -> None:
     if line_object.get("op_type") != "<print_string_variable>":
         return
-    var_name = get_string_variable(line_object.get("variable"))
+    var_name = get_string_variable(cast(str, line_object.get("variable")))
     if var_name is None:
         return
     output_text(var_name)
@@ -173,13 +173,13 @@ def _run_end(line_object: BasicLine) -> None:
 def evaluate_string_literal(line_object: BasicLine) -> str | None:
     if line_object.get("op") != "<string_literal>":
         return None
-    return line_object.get("string")
+    return cast(str | None, line_object.get("string"))
 
 
 def evaluate_string_variable(line_object: BasicLine) -> str | None:
     if line_object.get("op") != "<string_variable>":
         return None
-    name = line_object.get("variable")
+    name = cast(str, line_object.get("variable"))
     return get_string_variable(name)
 
 
@@ -193,12 +193,12 @@ def evaluate_string_singleton(line_object: BasicLine) -> str | None:
 def evaluate_string_op(line_object: BasicLine) -> str | None:
     if line_object.get("op") != "<string_concatenation>":
         return None
-    terms = line_object.get("terms")
+    terms = cast(list, line_object.get("terms"))
     if not terms:
         return None
     parts = []
     for term in terms:
-        result = evaluate_string_singleton(term)
+        result = evaluate_string_singleton(cast(BasicLine, term))
         if result is None:
             return None
         parts.append(result)
@@ -217,13 +217,13 @@ def evaluate_string_expression(line_object: BasicLine) -> str | None:
 def evaluate_numeric_literal(line_object: BasicLine) -> float | None:
     if line_object.get("op") != "<numeric_literal>":
         return None
-    return line_object.get("number")
+    return cast(float | None, line_object.get("number"))
 
 
 def evaluate_numeric_variable(line_object: BasicLine) -> float | None:
     if line_object.get("op") != "<numeric_variable>":
         return None
-    name = line_object.get("variable")
+    name = cast(str, line_object.get("variable"))
     return get_numeric_variable(name)
 
 
@@ -242,8 +242,8 @@ def evaluate_numeric_op(line_object: BasicLine) -> float | None:
     term2 = line_object.get("term2")
     if term1 is None or term2 is None:
         return None
-    val1 = evaluate_numeric_expression(term1)
-    val2 = evaluate_numeric_expression(term2)
+    val1 = evaluate_numeric_expression(cast(BasicLine, term1))
+    val2 = evaluate_numeric_expression(cast(BasicLine, term2))
     if val1 is None or val2 is None:
         return None
     match operand:
@@ -270,10 +270,10 @@ def evaluate_str_boolean_exp(line_object: BasicLine) -> bool | None:
     comparator = line_object.get("comparator")
     if comparator not in ("<string_equals>", "<string_not_equal>"):
         return None
-    var_value = get_string_variable(line_object.get("variable"))
+    var_value = get_string_variable(cast(str, line_object.get("variable")))
     if var_value is None:
         return None
-    term_value = evaluate_string_singleton(line_object.get("term"))
+    term_value = evaluate_string_singleton(cast(BasicLine, line_object.get("term")))
     if term_value is None:
         return None
     match comparator:
@@ -287,10 +287,10 @@ def evaluate_num_boolean_exp(line_object: BasicLine) -> bool | None:
     if comparator not in ("<numeric_equals>", "<numeric_not_equal>", "<lesser_than>",
                           "<lesser_equal>", "<greater_than>", "<greater_equal>"):
         return None
-    var_value = get_numeric_variable(line_object.get("variable"))
+    var_value = get_numeric_variable(cast(str, line_object.get("variable")))
     if var_value is None:
         return None
-    term_value = evaluate_numeric_singleton(line_object.get("term"))
+    term_value = evaluate_numeric_singleton(cast(BasicLine, line_object.get("term")))
     if term_value is None:
         return None
     match comparator:
