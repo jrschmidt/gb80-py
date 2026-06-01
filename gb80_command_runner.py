@@ -1,4 +1,4 @@
-from typing import Any, Callable, Generator, cast
+from typing import Any, Callable, Generator
 from gb80_program_runner import run_program
 from gb80_line_objects import (
     clear_all_program_lines,
@@ -29,8 +29,7 @@ def execute_list_command(output_text: Callable) -> None:
         line = get_line_object(line_number)
         if line is None:
             continue
-        text = cast(str, line["text"])
-        output_text(text)
+        output_text(line["text"])
 
 
 def execute_clear_command() -> None:

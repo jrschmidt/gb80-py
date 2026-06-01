@@ -55,7 +55,8 @@ def handle_new_line(self, line: str) -> None:
     if tokens[0] == "<parse_complete>":
         if tokens[1] == "<program_line>":
             line_object = build_line_object(tokens)
-            add_program_line(int(tokens[3]), line_object)
+            if line_object is not None:
+                add_program_line(int(tokens[3]), line_object)
         elif tokens[1] == "<console_command>":
             execute_console_command(tokens, display.output_text)
 
