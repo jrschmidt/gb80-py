@@ -2,7 +2,13 @@ from gb80_terminal import Main, TextDisplay
 from gb80_tokenizer import tokenize
 from gb80_line_builder import build_line_object
 from gb80_line_objects import add_program_line
-from gb80_command_runner import execute_console_command, is_waiting_for_input, resume_with_input
+from gb80_command_runner import (
+    execute_console_command,
+    is_waiting_for_input,
+    resume_with_input,
+    is_listing,
+    advance_listing,
+)
 from gb80_devtools import DEV_COMMANDS, _dev_state
 
 
@@ -61,9 +67,22 @@ def handle_new_line(self, line: str) -> None:
             execute_console_command(tokens, display.output_text)
 
 
+def handle_empty_enter(self) -> None:
+    if is_listing():
+        display = self.query_one(TextDisplay)
+        lines = display.lines
+        while lines and lines[-1] in ("", "( <ENTER> )"):
+            lines = lines[:-1]
+        display.update_lines(lines)
+        advance_listing()
+        if not is_listing():
+            display.output_text("")
+
+
 Main.on_init = handle_init  # type: ignore[method-assign]
 Main.on_new_line = handle_new_line  # type: ignore[method-assign]
 Main.on_mode_changed = handle_mode_changed  # type: ignore[method-assign]
+Main.on_empty_enter = handle_empty_enter  # type: ignore[method-assign]
 
 if __name__ == "__main__":
     Main().run()

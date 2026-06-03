@@ -88,6 +88,9 @@ class Main(App):
     def on_new_line(self, line: str) -> None:
         pass
 
+    def on_empty_enter(self) -> None:
+        pass
+
     def on_mode_changed(self, mode: str) -> None:
         pass
 
@@ -98,6 +101,8 @@ class Main(App):
                 self.on_new_line(self.input_line)
                 self.input_line = ""
                 display.output_text("")
+            else:
+                self.on_empty_enter()
         elif event.key == "backspace":
             if self.input_line:
                 display.update_lines(display.lines[:-1] + [display.lines[-1][:-1]])
