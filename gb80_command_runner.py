@@ -1,4 +1,5 @@
 from typing import Any, Callable, Generator
+from gb80_constants import HELP_MESSAGE
 from gb80_program_runner import run_program
 from gb80_line_objects import (
     clear_all_program_lines,
@@ -20,6 +21,8 @@ def _execute_console_command(tokens: list[str], output_text: Callable) -> None:
         execute_clear_command()
     if command == "<run>":
         execute_run_command(output_text)
+    if command == "<help>":
+        execute_help_command(output_text)
     if command == "<delete_program_line>":
         delete_program_line(int(tokens[4]))
 
@@ -76,6 +79,11 @@ def _advance_listing() -> None:
 
 def advance_listing() -> None:
     _advance_listing()
+
+
+def execute_help_command(output_text: Callable) -> None:
+    for line in HELP_MESSAGE:
+        output_text(line)
 
 
 def execute_clear_command() -> None:

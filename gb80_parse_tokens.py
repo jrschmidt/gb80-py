@@ -28,6 +28,7 @@ parse_tokens = [
     "<clear>",
     "<list>",
     "<run>",
+    "<help>",
     "<delete_program_line>",
 
     "<program_line>",
