@@ -29,6 +29,8 @@ parse_tokens = [
     "<list>",
     "<run>",
     "<help>",
+    "<save>",
+    "<filename>",
     "<delete_program_line>",
 
     "<program_line>",

@@ -1,5 +1,6 @@
 from typing import Any, Callable, Generator
 from gb80_constants import HELP_MESSAGE
+from gb80_files import is_valid_gb80_filename, save_gb80_file
 from gb80_program_runner import run_program
 from gb80_line_objects import (
     clear_all_program_lines,
@@ -23,6 +24,8 @@ def _execute_console_command(tokens: list[str], output_text: Callable) -> None:
         execute_run_command(output_text)
     if command == "<help>":
         execute_help_command(output_text)
+    if command == "<save>":
+        execute_save_command(tokens, output_text)
     if command == "<delete_program_line>":
         delete_program_line(int(tokens[4]))
 
@@ -84,6 +87,15 @@ def advance_listing() -> None:
 def execute_help_command(output_text: Callable) -> None:
     for line in HELP_MESSAGE:
         output_text(line)
+
+
+def execute_save_command(tokens: list[str], output_text: Callable) -> None:
+    name = tokens[4]
+    if not is_valid_gb80_filename(name):
+        output_text("NOT A VALID GB80 FILE NAME")
+        return
+    filename = name.lower() + ".gb80"
+    save_gb80_file(filename, output_text)
 
 
 def execute_clear_command() -> None:
