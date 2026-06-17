@@ -1,3 +1,7 @@
+import argparse
+import os
+import subprocess
+
 from gb80_terminal import Main, TextDisplay
 from gb80_tokenizer import tokenize
 from gb80_line_builder import build_line_object
@@ -79,10 +83,59 @@ def handle_empty_enter(self) -> None:
             display.output_text("")
 
 
+def _get_font_size() -> int:
+    term = os.environ.get("TERM_PROGRAM", "")
+    if term == "Apple_Terminal":
+        script = 'tell application "Terminal" to get font size of selected tab of front window'
+    elif term == "iTerm.app":
+        script = 'tell application "iTerm2" to tell current session of current window to get text size'
+    else:
+        return 15
+    result = subprocess.run(["osascript", "-e", script], capture_output=True, text=True)
+    try:
+        return int(float(result.stdout.strip()))
+    except ValueError:
+        return 15
+
+
+def _set_font_size(size: int) -> None:
+    term = os.environ.get("TERM_PROGRAM", "")
+    if term == "Apple_Terminal":
+        script = f"""
+tell application "Terminal"
+    set w to front window
+    set savedBounds to bounds of w
+    set font size of selected tab of w to {size}
+    set bounds of w to savedBounds
+end tell"""
+    elif term == "iTerm.app":
+        script = f"""
+tell application "iTerm2"
+    tell front window
+        set savedFrame to frame
+        tell current session
+            set text size to {size}
+        end tell
+        set frame to savedFrame
+    end tell
+end tell"""
+    else:
+        return
+    subprocess.run(["osascript", "-e", script], capture_output=True)
+
+
 Main.on_init = handle_init  # type: ignore[method-assign]
 Main.on_new_line = handle_new_line  # type: ignore[method-assign]
 Main.on_mode_changed = handle_mode_changed  # type: ignore[method-assign]
 Main.on_empty_enter = handle_empty_enter  # type: ignore[method-assign]
 
 if __name__ == "__main__":
-    Main().run()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--font", type=int, choices=[11, 13, 15, 17], default=15)
+    args = parser.parse_args()
+    original_size = _get_font_size()
+    _set_font_size(args.font)
+    try:
+        Main().run()
+    finally:
+        _set_font_size(original_size)
