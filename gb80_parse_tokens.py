@@ -28,10 +28,11 @@ parse_tokens = [
     "<clear>",
     "<list>",
     "<run>",
-    "<help>",
     "<save>",
+    "<files>",
     "<filename>",
     "<delete_program_line>",
+    "<help>",
 
     "<program_line>",
     "<line_number>",

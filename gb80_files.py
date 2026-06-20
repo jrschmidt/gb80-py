@@ -17,6 +17,18 @@ def is_valid_gb80_filename(name: str) -> bool:
     return bool(re.match(r'^[A-Za-z0-9]{1,8}$', name))
 
 
+def list_gb80_files(output_text: Callable) -> None:
+    if not SAVE_DIR.exists():
+        output_text("NO SAVED FILES")
+        return
+    files = sorted(p.name for p in SAVE_DIR.iterdir() if p.suffix == ".gb80")
+    if not files:
+        output_text("NO SAVED FILES")
+        return
+    for f in files:
+        output_text(f.upper())
+
+
 def save_gb80_file(filename: str, output_text: Callable) -> None:
     SAVE_DIR.mkdir(exist_ok=True)
     program_lines = {
