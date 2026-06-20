@@ -5,8 +5,7 @@ from gb80_program_runner import run_program
 from gb80_line_objects import (
     clear_all_program_lines,
     delete_program_line,
-    get_line_numbers,
-    get_line_object,
+    get_program_listing,
 )
 
 
@@ -42,24 +41,19 @@ def execute_list_command(output_text: Callable) -> None:
 
 
 def _list_generator(output_text: Callable) -> Generator[Any, Any, Any]:
-    line_numbers = get_line_numbers()
-    total = len(line_numbers)
+    lines = get_program_listing()
+    total = len(lines)
 
     if total <= 22:
-        for line_number in line_numbers:
-            line = get_line_object(line_number)
-            if line is not None:
-                output_text(line["text"])
+        for line in lines:
+            output_text(line)
         return
 
     count = 0
     page_limit = 20
 
-    for i, line_number in enumerate(line_numbers):
-        line = get_line_object(line_number)
-        if line is None:
-            continue
-        output_text(line["text"])
+    for i, line in enumerate(lines):
+        output_text(line)
         count += 1
         if count >= page_limit and (total - i - 1) > 0:
             output_text("( <ENTER> )")
