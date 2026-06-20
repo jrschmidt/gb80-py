@@ -1,0 +1,15 @@
+{
+  "10": {
+    "op_type": "<remark>",
+    "text": "10 REM HELLO"
+  },
+  "20": {
+    "op_type": "<print_string_literal>",
+    "string": "HELLO WORLD",
+    "text": "20 PRINT \"HELLO WORLD\""
+  },
+  "30": {
+    "op_type": "<end>",
+    "text": "30 END"
+  }
+}
