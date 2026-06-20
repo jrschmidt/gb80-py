@@ -547,8 +547,8 @@ def _parse_console_command(line: str) -> list[str]:
         tokens = ["<parse_complete>", "<console_command>", "<run>"]
     elif line == "HELP" :
         tokens = ["<parse_complete>", "<console_command>", "<help>"]
-    elif line.startswith("SAVE ") :
-        tokens = ["<parse_complete>", "<console_command>", "<save>", "<filename>", line[5:]]
+    elif line.startswith('SAVE "') and line.endswith('"') and len(line) > 6 :
+        tokens = ["<parse_complete>", "<console_command>", "<save>", "<filename>", line[6:-1]]
     else:
         tokens = ["<no_match>"]
 
