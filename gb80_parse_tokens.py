@@ -29,6 +29,7 @@ parse_tokens = [
     "<list>",
     "<run>",
     "<save>",
+    "<load>",
     "<files>",
     "<filename>",
     "<delete_program_line>",

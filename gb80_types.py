@@ -119,3 +119,5 @@ type BasicLine = (
     NumericInputLine | StringInputLine |
     EndLine
 )
+
+type ProgramLines = dict[int, BasicLine]

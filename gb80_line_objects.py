@@ -1,8 +1,8 @@
 import json
 
-from gb80_types import BasicLine
+from gb80_types import BasicLine, ProgramLines
 
-_program_lines: dict[int, BasicLine] = {}
+_program_lines: ProgramLines = {}
 
 
 def clear_all_program_lines() -> None:
@@ -26,12 +26,17 @@ def get_line_object(line_number: int) -> BasicLine | None:
     return _program_lines.get(line_number)
 
 
-def get_all_line_objects() -> dict[int, BasicLine]:
+def get_all_line_objects() -> ProgramLines:
     return dict(sorted(_program_lines.items()))
 
 
 def get_program_as_json() -> str:
     return json.dumps(get_all_line_objects(), indent=2)
+
+
+def set_program_lines(lines: ProgramLines) -> None:
+    global _program_lines
+    _program_lines = lines
 
 
 def get_program_listing() -> list[str]:

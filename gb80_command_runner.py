@@ -1,12 +1,14 @@
 from typing import Any, Callable, Generator
 from gb80_constants import HELP_MESSAGE
-from gb80_files import is_valid_gb80_filename, list_gb80_files, save_gb80_file
+from gb80_files import is_valid_gb80_filename, list_gb80_files, load_gb80_file, save_gb80_file
 from gb80_program_runner import run_program
 from gb80_line_objects import (
     clear_all_program_lines,
     delete_program_line,
     get_program_listing,
+    set_program_lines,
 )
+from gb80_variable_registry import start_var_registry
 
 
 def execute_console_command(tokens: list[str], output_text: Callable) -> None:
@@ -25,6 +27,8 @@ def _execute_console_command(tokens: list[str], output_text: Callable) -> None:
         delete_program_line(int(tokens[4]))
     if command == "<save>":
         execute_save_command(tokens, output_text)
+    if command == "<load>":
+        execute_load_command(tokens, output_text)
     if command == "<files>":
         execute_files_command(output_text)
     if command == "<help>":
@@ -89,13 +93,39 @@ def execute_files_command(output_text: Callable) -> None:
     list_gb80_files(output_text)
 
 
-def execute_save_command(tokens: list[str], output_text: Callable) -> None:
+def _validate_filename(tokens: list[str], output_text: Callable) -> str | None:
     name = tokens[4]
     if not is_valid_gb80_filename(name):
         output_text("NOT A VALID GB80 FILE NAME")
+        return None
+    return name
+
+
+def execute_save_command(tokens: list[str], output_text: Callable) -> None:
+    name = _validate_filename(tokens, output_text)
+    if name is None:
         return
     filename = name.lower() + ".gb80"
     save_gb80_file(filename, output_text)
+
+
+def execute_load_command(tokens: list[str], output_text: Callable) -> None:
+    name = _validate_filename(tokens, output_text)
+    if name is None:
+        return
+    load_program_default(name, output_text)
+
+
+def load_program_default(name: str, output_text: Callable) -> None:
+    filename = name.lower() + ".gb80"
+    program = load_gb80_file(filename)
+    if program is None:
+        output_text(f"FAILED TO LOAD {filename.upper()}")
+        return
+    clear_all_program_lines()
+    start_var_registry()
+    set_program_lines(program)
+    output_text(f"PROGRAM {filename.upper()} LOADED")
 
 
 def execute_clear_command() -> None:

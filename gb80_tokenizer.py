@@ -547,6 +547,8 @@ def _parse_console_command(line: str) -> list[str]:
         tokens = ["<parse_complete>", "<console_command>", "<run>"]
     elif line.startswith('SAVE "') and line.endswith('"') and len(line) > 6 :
         tokens = ["<parse_complete>", "<console_command>", "<save>", "<filename>", line[6:-1]]
+    elif line.startswith('LOAD "') and line.endswith('"') and len(line) > 6 :
+        tokens = ["<parse_complete>", "<console_command>", "<load>", "<filename>", line[6:-1]]
     elif line == "FILES" :
         tokens = ["<parse_complete>", "<console_command>", "<files>"]
     elif line == "HELP" :
