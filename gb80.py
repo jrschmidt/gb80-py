@@ -67,6 +67,8 @@ def handle_new_line(self, line: str) -> None:
             line_object = build_line_object(tokens)
             if line_object is not None:
                 add_program_line(int(tokens[3]), line_object)
+            else:
+                display.output_text("SYNTAX ERROR")
         elif tokens[1] == "<console_command>":
             execute_console_command(tokens, display.output_text)
 
