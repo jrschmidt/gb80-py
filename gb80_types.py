@@ -11,12 +11,17 @@ class NumericVariableExp(TypedDict):
     op: Literal["<numeric_variable>"]
     variable: str
 
+class NumericRandomExp(TypedDict):
+    op: Literal["<op_random>"]
+
+type NumericFunctionExp = NumericRandomExp
+
 class NumericOpExp(TypedDict):
     operand: str
     term1: "NumericExp"
     term2: "NumericExp"
 
-type NumericExp = NumericLiteralExp | NumericVariableExp | NumericOpExp
+type NumericExp = NumericLiteralExp | NumericVariableExp | NumericFunctionExp | NumericOpExp
 
 
 # --- String expression sub-objects ---

@@ -4,8 +4,10 @@ from gb80_types import (
     BooleanExp,
     NumericBooleanExp,
     NumericExp,
+    NumericFunctionExp,
     NumericLiteralExp,
     NumericOpExp,
+    NumericRandomExp,
     NumericVariableExp,
     StringAssignmentLine,
     StringBooleanExp,
@@ -232,10 +234,22 @@ def _build_num_var(tokens: list[str]) -> NumericVariableExp | None:
     }
 
 
-def _build_num_sing(tokens: list[str]) -> NumericLiteralExp | NumericVariableExp | None:
+def _build_num_sing(tokens: list[str]) -> NumericLiteralExp | NumericVariableExp | NumericFunctionExp | None:
     if len(tokens) != 2:
         return None
-    return _build_num_var(tokens) or _build_num_lit(tokens)
+    return _build_num_var(tokens) or _build_num_func(tokens) or _build_num_lit(tokens)
+
+
+def _build_random_func(tokens: list[str]) -> NumericRandomExp | None:
+    if tokens[1] == "<val_random>":
+        return {"op": "<op_random>"}
+    return None
+
+
+def _build_num_func(tokens: list[str]) -> NumericFunctionExp | None:
+    if tokens[0] == "<op_random>":
+        return _build_random_func(tokens)
+    return None
 
 
 _OP_ORDER: dict[str, int] = {

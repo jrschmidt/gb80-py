@@ -1,3 +1,4 @@
+import random
 from typing import Callable, cast
 from gb80_types import (
     BasicLine,
@@ -8,6 +9,7 @@ from gb80_types import (
     NumericAssignmentLine,
     NumericBooleanExp,
     NumericExp,
+    NumericFunctionExp,
     NumericInputLine,
     NumericLiteralExp,
     NumericOpExp,
@@ -209,10 +211,22 @@ def evaluate_numeric_variable(line_object: NumericVariableExp) -> float | None:
     return get_numeric_variable(line_object["variable"])
 
 
-def evaluate_numeric_singleton(line_object: NumericLiteralExp | NumericVariableExp) -> float | None:
+def evaluate_random_function() -> float:
+    return random.random()
+
+
+def evaluate_numeric_function(line_object: NumericFunctionExp) -> float | None:
+    if line_object["op"] == "<op_random>":
+        return evaluate_random_function()
+    return None
+
+
+def evaluate_numeric_singleton(line_object: NumericLiteralExp | NumericVariableExp | NumericFunctionExp) -> float | None:
     if line_object["op"] == "<numeric_literal>":
         return evaluate_numeric_literal(cast(NumericLiteralExp, line_object))
-    return evaluate_numeric_variable(cast(NumericVariableExp, line_object))
+    if line_object["op"] == "<numeric_variable>":
+        return evaluate_numeric_variable(cast(NumericVariableExp, line_object))
+    return evaluate_numeric_function(cast(NumericFunctionExp, line_object))
 
 
 def evaluate_numeric_op(line_object: NumericOpExp) -> float | None:
@@ -234,8 +248,8 @@ def evaluate_numeric_op(line_object: NumericOpExp) -> float | None:
 
 def evaluate_numeric_expression(line_object: NumericExp) -> float | None:
     op = line_object.get("op")
-    if op in ("<numeric_literal>", "<numeric_variable>"):
-        return evaluate_numeric_singleton(cast(NumericLiteralExp | NumericVariableExp, line_object))
+    if op in ("<numeric_literal>", "<numeric_variable>", "<op_random>"):
+        return evaluate_numeric_singleton(cast(NumericLiteralExp | NumericVariableExp | NumericFunctionExp, line_object))
     return evaluate_numeric_op(cast(NumericOpExp, line_object))
 
 
