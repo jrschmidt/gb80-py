@@ -206,11 +206,19 @@ def string_after(tag: str, tokens: list[str]) -> str:
 # for numeric, string and boolean expressions.
 
 
+NUM_SINGLETON_KEYWORDS = ["<numeric_literal>", "<numeric_variable>"]
+NUM_FUNCTION_KEYWORDS = ["<random>"]
+
+
 def _build_numeric_exp(tokens: list[str]) -> NumericExp | None:
     if tokens[0] != "<numeric_expression>" or tokens[-1] != "<numeric_expression_end>":
         return None
-    if len(tokens) == 4:
-        return _build_num_sing(tokens[1:-1])
+    if find_splitter(tokens) is None:
+        if tokens[1] in NUM_SINGLETON_KEYWORDS:
+            return _build_num_sing(tokens[1:-1])
+        if tokens[1] in NUM_FUNCTION_KEYWORDS:
+            return _build_num_func(tokens[1:-1])
+        return None
     return _build_num_op(tokens)
 
 
@@ -234,20 +242,20 @@ def _build_num_var(tokens: list[str]) -> NumericVariableExp | None:
     }
 
 
-def _build_num_sing(tokens: list[str]) -> NumericLiteralExp | NumericVariableExp | NumericFunctionExp | None:
+def _build_num_sing(tokens: list[str]) -> NumericLiteralExp | NumericVariableExp | None:
     if len(tokens) != 2:
         return None
-    return _build_num_var(tokens) or _build_num_func(tokens) or _build_num_lit(tokens)
+    return _build_num_var(tokens) or _build_num_lit(tokens)
 
 
 def _build_random_func(tokens: list[str]) -> NumericRandomExp | None:
-    if tokens[1] == "<val_random>":
-        return {"op": "<op_random>"}
+    if tokens[0] == "<random>":
+        return {"op": "<random>"}
     return None
 
 
 def _build_num_func(tokens: list[str]) -> NumericFunctionExp | None:
-    if tokens[0] == "<op_random>":
+    if tokens[0] == "<random>":
         return _build_random_func(tokens)
     return None
 

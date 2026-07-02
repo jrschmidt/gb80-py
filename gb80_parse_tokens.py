@@ -76,8 +76,7 @@ parse_tokens = [
     "<power>",
     "<left_paren>",
     "<right_paren>",
-    "<op_random>",
-    "<val_random>",
+    "<random>",
 
     "<boolean_expression>",
     "<num_bool_expression>",

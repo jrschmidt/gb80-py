@@ -12,7 +12,7 @@ class NumericVariableExp(TypedDict):
     variable: str
 
 class NumericRandomExp(TypedDict):
-    op: Literal["<op_random>"]
+    op: Literal["<random>"]
 
 type NumericFunctionExp = NumericRandomExp
 

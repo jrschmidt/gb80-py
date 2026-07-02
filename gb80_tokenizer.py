@@ -416,7 +416,7 @@ def _parse_numeric_expression(expr_string: str) -> list[str]:
             continue
 
         if s.startswith("RND") and (len(s) == 3 or not s[3].isalnum()):
-            result.extend(["<op_random>", "<val_random>"])
+            result.append("<random>")
             s = s[3:]
             continue
 

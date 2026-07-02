@@ -1,8 +1,8 @@
-from rich.markup import escape
 from textual.app import App, ComposeResult
 from textual.widgets import Static, Footer
 from textual.binding import Binding
 from textual.containers import Center, Middle
+from textual.content import Content
 
 MAX_LINES = 24
 MAX_COLS = 80
@@ -30,10 +30,14 @@ class TextDisplay(Static):
         if len(lines) > MAX_LINES or any(len(line) > MAX_COLS for line in lines):
             raise ValueError("Lines in lines[] buffer exceeds maximum.")
         self.lines = lines
-        rendered = [escape(line) for line in (lines if self._dev_mode else [line.upper() for line in lines])]
+        display_lines = lines if self._dev_mode else [line.upper() for line in lines]
+        # Content(line) treats the text as fully literal (no markup parsing), so
+        # brackets and backslashes in program content can never be misread as tags
+        # or swallow the cursor tag appended below.
+        rendered = [Content(line) for line in display_lines]
         if rendered:
-            rendered[-1] += "[blink underline] [/]"
-        self.update("\n".join(rendered))
+            rendered[-1] = rendered[-1] + Content.from_markup("[blink underline] [/]")
+        self.update(Content("\n").join(rendered))
 
     def output_text(self, line: str) -> None:
         chunks = [line[i:i+MAX_COLS] for i in range(0, max(len(line), 1), MAX_COLS)] if self._dev_mode else [line]
@@ -107,6 +111,8 @@ class Main(App):
             if self.input_line:
                 display.update_lines(display.lines[:-1] + [display.lines[-1][:-1]])
                 self.input_line = self.input_line[:-1]
+        elif event.key == "backslash":
+            return
         elif event.is_printable and len(self.input_line) < MAX_COLS:
             display.append_character(event.character)
             self.input_line += event.character if display._dev_mode else event.character.upper()
